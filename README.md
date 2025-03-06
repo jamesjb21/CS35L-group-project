@@ -36,7 +36,7 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 3. install backend packages
    ```bash
    cd backend
-   pip3 install -U -r requirements.txt
+   pip install -U -r requirements.txt
 4. install front packages 
    ```bash
    cd ..
