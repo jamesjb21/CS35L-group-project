@@ -27,3 +27,28 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
    ```bash
    git clone https://github.com/jamesjb21/CS35L-group-project.git
 2. Create a virtual environment:
+   ```bash
+   python -m venv <environment_name>
+   source <environment_name>/bin/activate *for linux/macos
+   <environment_name>\Scripts\activate *for windows
+
+   deactivate *deactivate environment
+3. install backend packages
+   ```bash
+   cd backend
+   pip3 install -U -r requirements.txt
+4. install front packages 
+   ```bash
+   cd ..
+   cd frontend
+   npm install
+5. Activate backend
+   ```bash
+   cd backend
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py runserver
+6. Activate frontend
+   ```bash
+   cd frontend
+   npm run dev
