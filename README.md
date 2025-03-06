@@ -26,3 +26,4 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 1. Clone the repository:
    ```bash
    git clone https://github.com/jamesjb21/CS35L-group-project.git
+2. Create a virtual environment:
