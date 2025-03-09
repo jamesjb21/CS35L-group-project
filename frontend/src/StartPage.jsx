@@ -33,7 +33,7 @@ const StartPage = () => {
             className="start-page-button"
             onClick={() => navigate('/login')}
           >
-            Get Started
+            Login or Get Started
           </button>
         </div>
       </div>
