@@ -25,8 +25,8 @@ function Form({ route, method }) {
             } else {
                 navigate("/login");
             }
-        } catch (err) {
-            setError(err.response?.data?.detail || "An error occurred"); // Store error message
+        } catch (error) {
+            alert(error)
         } finally {
             setLoading(false);
         }
@@ -35,7 +35,6 @@ function Form({ route, method }) {
     return (
         <form onSubmit={handleSubmit} className="form-container">
             <h1>{name}</h1>
-            <div>
                 <input
                     className="form-input"
                     type="text"
@@ -43,8 +42,6 @@ function Form({ route, method }) {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
                 />
-            </div>
-            <div>
                 <input
                     className="form-input"
                     type="password"
@@ -52,11 +49,9 @@ function Form({ route, method }) {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
                 />
-            </div>
-            {error && <p className="error">{error}</p>}
-            <button className="form-button" type="submit" disabled={loading}>
-                {loading ? "Loading..." : name}
-            </button>
+                <button className="form-button" type="submit">
+                    {name}
+                </button>
         </form>
     );
 }

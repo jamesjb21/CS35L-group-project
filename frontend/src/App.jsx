@@ -1,11 +1,11 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
+import Login from './pages/LoginPage'
 import StartPage from './StartPage'
 import NotFound from './pages/NotFound'
 import './index.css' // Global styles
 import HomePage from './pages/HomePage'
-import Register from './pages/Register'
+import Signup from './pages/SignupPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function Logout()
@@ -14,10 +14,10 @@ function Logout()
   return <Navigate to="/login" />
 }
 
-function RegisterAndLogout()
+function SignupAndLogout()
 {
   localStorage.clear()
-  return <Register />
+  return <Signup />
 }
 
 function App() {
@@ -28,7 +28,8 @@ function App() {
         <Route path="/" element={<StartPage />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route Register path="/register" element={<RegisterAndLogout />} />
+        <Route path="/signup" element={<SignupAndLogout />} />
+        <Route path="/logout" element={<Logout />} />
       </Routes>
     </BrowserRouter>
   );
