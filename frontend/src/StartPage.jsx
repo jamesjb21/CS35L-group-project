@@ -17,7 +17,6 @@ const StartPage = () => {
           <h1 className="title">TasteBuds</h1>
         </div>
       </header>
-
       <main className="main-content">
         <h2 className="main-heading">Finding Friends Through Food</h2>
         <p className="subheading">Flavors worth sharing</p>
