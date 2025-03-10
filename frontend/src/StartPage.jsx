@@ -6,46 +6,28 @@ const StartPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="start-page-container">
-      {/* Left Side */}
-      <div className="start-page-left">
-        {/* Header: Logo and App Name in the top left */}
-        <div className="header-container">
-          <div className="logo-container">
-            <img 
-              src="/images/logo.jpeg" // Path to logo in public/images
-              alt="TasteBuds Logo" 
-              className="logo" 
-            />
-            <h1 className="app-name">TasteBuds</h1>
-          </div>
+    <div className="start-page">
+      <header className="header">
+        <div className="logo-container">
+          <img 
+            src="/public/logo.png" 
+            alt="TasteBuds Logo" 
+            className="logo" 
+          />
+          <h1 className="title">TasteBuds</h1>
         </div>
+      </header>
 
-        {/* Main Content: Catchphrase and Button, centered */}
-        <div className="content-container">
-          <div className="catchphrase-container">
-            <h2 className="catchphrase">Your Culinary Community</h2>
-            <p className="app-description">
-              Share, discover, and connect with food lovers around the world.
-            </p>
-          </div>
-          <button
-            className="start-page-button"
-            onClick={() => navigate('/login')}
-          >
-            Get Started
-          </button>
-        </div>
-      </div>
-
-      {/* Right Side */}
-      <div className="start-page-right">
-        <img 
-          src="/images/banner.jpeg" // Path to banner in public/images
-          alt="Cooking Banner" 
-          className="banner-image" 
-        />
-      </div>
+      <main className="main-content">
+        <h2 className="main-heading">Finding Friends Through Food</h2>
+        <p className="subheading">Flavors worth sharing</p>
+        <button
+          className="join-button"
+          onClick={() => navigate('/signup')}
+        >
+          Join Now
+        </button>
+      </main>
     </div>
   );
 };
