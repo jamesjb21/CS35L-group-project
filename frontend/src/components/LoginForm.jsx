@@ -10,11 +10,14 @@ function Form({ route, method }) {
     const [error, setError] = useState(""); // Added error state
     const navigate = useNavigate();
 
-    const name = method === "login" ? "Login" : "Register";
+    const name = method === "login" ? "Login" : "Signup";
 
     const handleSubmit = async (e) => {
         setLoading(true);
         e.preventDefault();
+        console.log("✅ handleSubmit triggered!"); // <--- Add this first
+        setLoading(true);
+         setError("");
 
         try {
             const response = await api.post(route, { username, password });
