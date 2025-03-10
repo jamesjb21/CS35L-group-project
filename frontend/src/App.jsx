@@ -19,7 +19,7 @@ function SignupAndLogout()
   localStorage.clear()
   return <Signup />
 }
-
+  
 function App() {
   return (
     <BrowserRouter>
