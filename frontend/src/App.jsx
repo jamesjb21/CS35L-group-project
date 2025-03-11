@@ -24,12 +24,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login/" element={<Login />} />
         <Route path="/" element={<StartPage />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route path="/signup" element={<SignupAndLogout />} />
-        <Route path="/logout" element={<Logout />} />
+        <Route path="/home/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/signup/" element={<SignupAndLogout />} />
+        <Route path="/logout/" element={<Logout />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,48 +1,45 @@
 import { useState } from "react";
-import api from "../api";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import "../styles/SignupPage.css";
 
 const SignUpForm = ({ route, method }) => {
 
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const name = method === "login" ? "Login" : "Signup";
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const name = method === "login" ? "Login" : "Register";
 
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
+    e.preventDefault();
+    console.log(" Form submitted!"); // Confirm function runs
+    console.log(" API route:", route);
+    console.log("Data:", { firstName, lastName, email, password });
+    setLoading(true);
+    setError("");
 
-      // Prevent empty submissions
-      if (!username || !password || !firstName || !lastName) {
-          alert("Please enter both username and password.");
-          setLoading(false);
-          return;
-      }
-
-      try {
-          const res = await api.post(route, { firstName, lastName, username, password });
-          console.log("API response:", res.data); // Log response
-
-          if (method === "login") {
-              localStorage.setItem(ACCESS_TOKEN, res.data.access);
-              localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-              navigate("/home");
-          } else {
-              navigate("/login");
-          }
-      } catch (error) {
-          console.error("API error:", error.response?.data || error.message);
-          alert(error.response?.data?.message || "An error occurred. Please try again.");
-      } finally {
-          setLoading(false);
-      }
+    if (firstName === "" || lastName === "" || email === ""|| password === "" ) {
+      console.log("Please fill in all fields.");
+      setLoading(false);
+    }
+  
+    try {
+      const res = await api.post(route, {firstName, lastName, email, password});
+  
+      console.log("API response:", res.data); // Log API respons
+      navigate("/login");
+    } catch (error) {
+      console.error("API error:"); // Log API error response
+      setError(error.response?.data?.message || "An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,7 +54,7 @@ const SignUpForm = ({ route, method }) => {
             <h1 className="signup-title">Create your free account now!</h1>
             <form className="signup-form" onSubmit={handleSubmit}>
               <div className="name-row">
-              <div className="form-group">
+                <div className="form-group">
                   <input
                     type="text"
                     value={firstName}
@@ -79,9 +76,9 @@ const SignUpForm = ({ route, method }) => {
               <div className="form-group">
                 <input
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
                   className="form-input"
                 />
               </div>
@@ -116,4 +113,3 @@ const SignUpForm = ({ route, method }) => {
 };
 
 export default SignUpForm;
-
