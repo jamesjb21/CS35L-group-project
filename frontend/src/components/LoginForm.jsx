@@ -2,61 +2,95 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
+import "../styles/SignupPage.css";
 
-function Form({ route, method }) {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(""); // Added error state
-    const navigate = useNavigate();
+const LoginForm = ({ route, method }) => {
 
-    const name = method === "login" ? "Login" : "Signup";
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        setLoading(true);
-        e.preventDefault();
-        console.log("✅ handleSubmit triggered!"); // <--- Add this first
-        setLoading(true);
-         setError("");
+  const name = method === "login" ? "Login" : "Register";
 
-        try {
-            const response = await api.post(route, { username, password });
-            if (method === "login" && response.status === 200) {
-                localStorage.setItem(ACCESS_TOKEN, response.data.access);
-                localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
-                navigate("/home");
-            } else {
-                navigate("/login");
-            }
-        } catch (error) {
-            alert(error)
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
 
-    return (
-        <form onSubmit={handleSubmit} className="form-container">
-            <h1>{name}</h1>
+      // Prevent empty submissions
+      if (!username || !password) {
+          alert("Please enter both username and password.");
+          setLoading(false);
+          return;
+      }
+
+      try {
+          const res = await api.post(route, { username, password });
+          console.log("API response:", res.data); // Log response
+
+          if (method === "login") {
+              localStorage.setItem(ACCESS_TOKEN, res.data.access);
+              localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
+              navigate("/home");
+          } else {
+              navigate("/login");
+          }
+      } catch (error) {
+          console.error("API error:", error.response?.data || error.message);
+          alert(error.response?.data?.message || "An error occurred. Please try again.");
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  return (
+    <div className="signup-container">
+      <div className="signup-content">
+
+        <div className="signup-form-container">
+          <div className="form-wrapper">
+            <h1 className="signup-title">Create your free account now!</h1>
+            <form className="signup-form" onSubmit={handleSubmit}>
+              <div className="name-row">
+              </div>
+              <div className="form-group">
                 <input
-                    className="form-input"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
+                  className="form-input"
                 />
+              </div>
+              <div className="form-group">
                 <input
-                    className="form-input"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="form-input"
                 />
-                <button className="form-button" type="submit">
-                    {name}
-                </button>
-        </form>
-    );
-}
+              </div>
+              <button type="submit" className="signup-button">
+                {name}
+              </button>
+            </form>
 
-export default Form;
+            <div className="divider">
+              <span className="divider-line"></span>
+              <span className="divider-text">Or</span>
+              <span className="divider-line"></span>
+            </div>
+
+            <button className="login-button" onClick={() => navigate("/signup")}>
+              Dont Have an Account? Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginForm;
+
