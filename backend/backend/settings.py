@@ -123,6 +123,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+#   Password salt and hash
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',       # Default and recommended
+    'django.contrib.auth.hashers.Argon2PasswordHasher',         # Alternative strong hasher
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',   # Another secure option
+    'django.contrib.auth.hashers.ScryptPasswordHasher',         # Yet another modern choice
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
