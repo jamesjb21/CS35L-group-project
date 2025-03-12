@@ -32,6 +32,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+AUTH_USER_MODEL = 'api.MyUser'
+
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -44,7 +47,12 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'USER_ID_FIELD': 'username'
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 
 # Application definition
