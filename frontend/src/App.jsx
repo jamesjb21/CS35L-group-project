@@ -7,6 +7,11 @@ import './index.css' // Global styles
 import HomePage from './pages/HomePage'
 import Signup from './pages/SignupPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import Layout from './components/layout'
+import { ChakraBaseProvider } from '@chakra-ui/react'
+import Search from './pages/Search'
+import Profile from './pages/Profile'
+import CreateRecipe from './pages/CreateRecipe'
 
 function Logout()
 {
@@ -22,16 +27,22 @@ function SignupAndLogout()
   
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login/" element={<Login />} />
-        <Route path="/" element={<StartPage />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/home/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route path="/signup/" element={<SignupAndLogout />} />
-        <Route path="/logout/" element={<Logout />} />
-      </Routes>
-    </BrowserRouter>
+    <ChakraBaseProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login/" element={<Layout><Login /></Layout>} />
+          <Route path="/" element={<StartPage />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/home/" element={<Layout><ProtectedRoute><HomePage /></ProtectedRoute></Layout>} />
+          <Route path="/signup/" element={<Layout><SignupAndLogout /></Layout>} />
+          <Route path="/logout/" element={<Logout />} /> 
+          <Route path="/profile/" element={<Layout><Profile /></Layout>} /> 
+          <Route path="/recipe/" element={<Layout><CreateRecipe /></Layout>} />
+          <Route path="/search/" element={<Layout><Search /></Layout>} /> 
+
+        </Routes>
+      </BrowserRouter>
+    </ChakraBaseProvider>
   );
 }
 

@@ -49,7 +49,7 @@ const LoginForm = ({ route, method }) => {
 
         <div className="signup-form-container">
           <div className="form-wrapper">
-            <h1 className="signup-title">Create your free account now!</h1>
+            <h1 className="signup-title">Login</h1>
             <form className="signup-form" onSubmit={handleSubmit}>
               <div className="name-row">
               </div>
