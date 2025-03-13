@@ -31,6 +31,17 @@ import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
 
+/**
+ * Profile Component
+ * 
+ * Displays a user's profile page with their information and posts.
+ * Features:
+ * - Shows user details (username, avatar, etc.)
+ * - Displays the user's recipe posts in a grid
+ * - Allows viewing individual posts in a modal
+ * - Handles different states: loading, error, and data display
+ * - Shows different UI for own profile vs. other users' profiles
+ */
 const Profile = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState(null);
@@ -42,7 +53,8 @@ const Profile = () => {
   const toast = useToast();
   const navigate = useNavigate();
   
-  // Get current user from token - but don't throw errors if token is invalid
+  // Determine if the current logged-in user is viewing their own profile
+  // This is used to conditionally render edit buttons and other user-specific features
   let currentUsername = null;
   try {
     const token = localStorage.getItem(ACCESS_TOKEN);
