@@ -155,6 +155,19 @@ const CreatePost = () => {
       });
       return;
     }
+    
+    // If there's content in the current ingredient field, ask if the user wants to add it first
+    if (currentIngredient.trim()) {
+      const wantToAddIngredient = window.confirm(
+        "You have an ingredient in the input field that hasn't been added to the list. Would you like to add it before posting?"
+      );
+      
+      if (wantToAddIngredient) {
+        addIngredient();
+        return; // Return to let the user review after adding
+      }
+      // If they don't want to add it, continue with submission
+    }
 
     setIsLoading(true);
     
@@ -297,8 +310,8 @@ const CreatePost = () => {
 
           <Divider />
           
-          <FormControl isRequired>
-            <FormLabel fontSize="lg" fontWeight="bold">Ingredients</FormLabel>
+          <FormControl>
+            <FormLabel fontSize="lg" fontWeight="bold">Ingredients*</FormLabel>
             
             <VStack spacing={3} align="stretch">
               <HStack spacing={0} align="flex-end">
@@ -419,6 +432,9 @@ const CreatePost = () => {
               <Text color="gray.600" fontSize="sm" pl={2}>
                 Select "No Unit" option to add ingredient name only (like "salt" or "black pepper")
               </Text>
+              <Text color="gray.600" fontSize="sm" pl={2}>
+                At least one ingredient must be added to the list above before sharing your recipe
+              </Text>
             </VStack>
             
             <Box mt={4}>
@@ -483,6 +499,7 @@ const CreatePost = () => {
             bg="green.500"
             color="white"
             isLoading={isLoading}
+            isDisabled={!caption.trim() || !image || ingredients.length === 0 || !instructions.trim()}
             size="lg"
             width="100%"
             fontSize="xl"
