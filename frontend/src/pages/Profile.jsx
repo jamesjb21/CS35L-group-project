@@ -46,6 +46,20 @@ import { GiCook } from 'react-icons/gi';
 import { FaEdit, FaUserFriends } from 'react-icons/fa';
 import { IoSave } from 'react-icons/io5';
 
+/**
+ * Profile Component
+ * 
+ * Displays a user's profile page with the following features:
+ * - User information (username, avatar, bio)
+ * - Profile statistics (recipe count, followers, following)
+ * - Grid of user's recipes/posts
+ * - Follow/unfollow functionality for other users
+ * - Bio editing for the user's own profile
+ * - Modal to view followers
+ * 
+ * The component handles both viewing other users' profiles and the current user's own profile.
+ * It differentiates between these cases to show appropriate actions (e.g., follow button or edit bio).
+ */
 const Profile = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState(null);
@@ -57,8 +71,15 @@ const Profile = () => {
   const [editedBio, setEditedBio] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [followers, setFollowers] = useState([]);
-  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  
+  // State for followers modal functionality
+  const [followers, setFollowers] = useState([]); // Stores the list of followers
+  const [loadingFollowers, setLoadingFollowers] = useState(false); // Controls loading state in followers modal
+  
+  // Custom hook from Chakra UI for controlling the followers modal
+  // isFollowersOpen: boolean state indicating if modal is open
+  // onFollowersOpen: function to open the modal
+  // onFollowersClose: function to close the modal
   const {
     isOpen: isFollowersOpen,
     onOpen: onFollowersOpen,
@@ -95,6 +116,12 @@ const Profile = () => {
     paramUsername: username
   });
 
+  /**
+   * Fetches the user profile data from the API
+   * - Retrieves basic user information, follow status, and counts
+   * - Handles authentication errors to show appropriate messages
+   * - Updates profile state with the fetched data
+   */
   const fetchProfile = async () => {
     try {
       console.log("Fetching profile for:", profileUsername);
@@ -131,6 +158,13 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Fetches the user's posts/recipes from the API
+   * - Retrieves all recipes created by the user
+   * - Requires authentication token for access
+   * - Updates posts state with the fetched data
+   * - Sets loading state to false when complete
+   */
   const fetchPosts = async () => {
     try {
       console.log("Fetching posts for:", profileUsername);
@@ -155,6 +189,11 @@ const Profile = () => {
     }
   };
 
+  // Fetches the list of followers for the current profile
+  // 1. Shows loading state immediately by opening modal
+  // 2. Fetches followers data from API
+  // 3. Updates followers state with result
+  // 4. Handles errors with appropriate toast notifications
   const fetchFollowers = async () => {
     try {
       console.log("Followers clicked - opening modal and fetching data");
@@ -191,6 +230,13 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Handles following or unfollowing a user
+   * - Prevents users from following themselves
+   * - Sends API request to toggle follow status
+   * - Refreshes profile data to update the UI
+   * - Handles and displays any errors that occur
+   */
   const handleFollow = async () => {
     try {
       // Prevent following yourself
@@ -222,11 +268,22 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Opens the modal to display a selected recipe/post in detail
+   * @param {Object} post - The post object to display in the modal
+   */
   const openPostModal = (post) => {
     setSelectedPost(post);
     onOpen();
   };
 
+  /**
+   * Updates the user's bio information
+   * - Makes an API request to update the bio text
+   * - Updates the local profile state with the new bio
+   * - Exits editing mode when successful
+   * - Displays success or error notifications
+   */
   const handleUpdateBio = async () => {
     try {
       const token = localStorage.getItem(ACCESS_TOKEN);
@@ -418,10 +475,14 @@ const Profile = () => {
                   )}
                 </Flex>
                 
+                {/* Profile Statistics Section */}
                 <Flex mb={6} gap={8} align="center">
+                  {/* Recipe count statistic */}
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{posts.length}</Text> Recipes
                   </Text>
+                  
+                  {/* Followers count - clickable to show modal */}
                   <Text 
                     fontSize="lg" 
                     fontWeight="bold" 
@@ -436,6 +497,8 @@ const Profile = () => {
                     Followers
                     <Icon as={FaUserFriends} ml={1} color="#7ac142" />
                   </Text>
+                  
+                  {/* Following count statistic */}
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{profile.following_count || 0}</Text> Following
                   </Text>
@@ -592,7 +655,7 @@ const Profile = () => {
         </>
       )}
 
-      {/* Followers Modal */}
+      {/* Followers Modal - Displays list of users who follow this profile */}
       <Modal 
         isOpen={isFollowersOpen} 
         onClose={onFollowersClose} 
@@ -610,6 +673,7 @@ const Profile = () => {
           boxShadow="xl"
           bg="white"
         >
+          {/* Modal Header with gradient background */}
           <ModalHeader 
             fontSize="lg" 
             fontWeight="bold" 
@@ -625,11 +689,13 @@ const Profile = () => {
           </ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody pb={6}>
+            {/* Loading state */}
             {loadingFollowers ? (
               <Center py={8}>
                 <Spinner size="lg" color="#7ac142" thickness="4px" />
               </Center>
             ) : followers.length > 0 ? (
+              /* List of followers with their avatar and basic info */
               <List spacing={3}>
                 {followers.map(follower => (
                   <ListItem key={follower.username} py={2}>
@@ -663,6 +729,7 @@ const Profile = () => {
                 ))}
               </List>
             ) : (
+              /* Empty state when user has no followers */
               <Center flexDirection="column" py={8}>
                 <Icon as={FaUserFriends} boxSize="3rem" color="#7ac142" mb={4} />
                 <Text fontWeight="medium" textAlign="center">
