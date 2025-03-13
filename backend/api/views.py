@@ -15,8 +15,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
 
-# Create your views here.
+"""
+API Views for the Social Cooking App
+This module contains all the API endpoints for the cooking social network application,
+including user management, posts, likes, comments, and search functionality.
+"""
+
 class CreateUserView(generics.CreateAPIView):
+    """
+    API endpoint for user registration
+    
+    This view handles user creation without requiring authentication,
+    allowing new users to register with the application.
+    """
     queryset = MyUser.objects.all
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
@@ -24,6 +35,16 @@ class CreateUserView(generics.CreateAPIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_profile_data(request, pk):
+    """
+    Retrieves a user's profile data by username
+    
+    Args:
+        request: The HTTP request
+        pk: The username to retrieve profile for
+        
+    Returns:
+        User profile data or appropriate error response
+    """
     try:
         try:
             user = MyUser.objects.get(username=pk)
@@ -38,7 +59,12 @@ def get_user_profile_data(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_users(request):
-    """Search for users by username"""
+    """
+    Search for users by username, first name, or last name
+    
+    Uses a case-insensitive search against multiple user fields
+    to provide flexible user searching capabilities.
+    """
     try:
         query = request.query_params.get('query', '')
         if not query:
