@@ -28,6 +28,17 @@ import axios from 'axios';
 import { API_URL } from '../constants';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * CreatePost Component
+ * 
+ * This component provides a form for users to create a new recipe post.
+ * Features include:
+ * - Adding a caption/title for the recipe
+ * - Uploading an image
+ * - Adding multiple ingredients with quantities and units
+ * - Adding cooking instructions
+ * - Submitting the recipe to the backend API
+ */
 const CreatePost = () => {
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState(null);
@@ -44,10 +55,15 @@ const CreatePost = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
+  // Standard cooking measurement units for ingredients
   const unitOptions = [
     'tbsp', 'tsp', 'cup', 'oz', 'g', 'kg', 'lb', 'ml', 'L', 'pinch', 'to taste', 'count'
   ];
 
+  /**
+   * Handles image file uploads and creates a preview
+   * @param {Event} e - The change event from the file input
+   */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -60,6 +76,10 @@ const CreatePost = () => {
     }
   };
 
+  /**
+   * Adds a new ingredient to the ingredients list
+   * Validates that an ingredient name is provided
+   */
   const addIngredient = () => {
     if (!currentIngredient.trim()) {
       toast({
