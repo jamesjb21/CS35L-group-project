@@ -75,11 +75,23 @@ const CreatePost = () => {
   const addIngredient = () => {
     // Only add the ingredient to the list if there's a name
     if (currentIngredient.trim()) {
+      // If custom unit is selected but empty, show error
+      if (isCustomUnit && !customUnit.trim()) {
+        toast({
+          title: "Custom unit required",
+          description: "Please enter a custom unit or select a standard unit from the dropdown",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      
       const newIngredient = {
         id: Date.now(),
         name: currentIngredient.trim(),
-        quantity: currentUnit === 'none' ? 0 : currentQuantity,
-        unit: currentUnit === 'none' ? '' : (isCustomUnit ? customUnit.trim() || 'custom' : currentUnit)
+        quantity: currentUnit === 'none' ? null : currentQuantity,
+        unit: currentUnit === 'none' ? '' : (isCustomUnit ? customUnit.trim() : currentUnit)
       };
 
       setIngredients([...ingredients, newIngredient]);
@@ -223,7 +235,7 @@ const CreatePost = () => {
 
   // Display format for ingredients
   const formatIngredient = (ingredient) => {
-    if (ingredient.quantity === 0 || !ingredient.unit) {
+    if (ingredient.quantity === null || ingredient.quantity === 0 || !ingredient.unit) {
       return ingredient.name;
     }
     return `${ingredient.quantity} ${ingredient.unit} ${ingredient.name}`;
@@ -261,7 +273,7 @@ const CreatePost = () => {
         </Heading>
       </Box>
       
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <VStack spacing={8} align="stretch">
           <FormControl isRequired>
             <FormLabel fontSize="lg" fontWeight="bold">Recipe Image</FormLabel>
@@ -331,6 +343,7 @@ const CreatePost = () => {
                   border="1px solid"
                   borderColor="gray.300"
                   _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                  required={false}
                 />
                 
                 {currentUnit !== 'none' && (
@@ -343,6 +356,7 @@ const CreatePost = () => {
                     width="15%"
                     size="lg"
                     mr={1}
+                    required={false}
                   >
                     <NumberInputField 
                       p={5}
@@ -401,8 +415,9 @@ const CreatePost = () => {
                       height="60px"
                       boxShadow="sm"
                       border="1px solid"
-                      borderColor="gray.300"
+                      borderColor={isCustomUnit && currentIngredient.trim() && !customUnit.trim() ? "red.500" : "gray.300"}
                       _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                      required={false}
                     />
                     <IconButton
                       icon={<IoChevronBack />}
