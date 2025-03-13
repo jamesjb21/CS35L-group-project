@@ -1,5 +1,5 @@
 function CreateRecipe() {
-    return <div>Make Recipies</div>
+    return <div>Make Recipes</div>
 }
 
 export default CreateRecipe;
