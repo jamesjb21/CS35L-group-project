@@ -12,11 +12,12 @@
     display: flex;
     width: 100%;
     background-color: #f6f8fa;
-    height: auto;
+    height: 100vh;
     overflow: hidden;
-    padding: 50px;
+    padding: 20px 50px;
     gap: 50px;
     align-items: center;
+    justify-content: center;
   }
   
   .signup-image {
@@ -25,11 +26,14 @@
     overflow: hidden;
     aspect-ratio: 1 / 1;
     max-width: 45%;
+    max-height: 90vh;
     box-shadow: none;
     border-radius: 8px;
     background: none;
     background-color: transparent !important;
     border: none;
+    display: flex;
+    align-items: center;
   }
   
   .banner-image {

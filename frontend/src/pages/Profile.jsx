@@ -22,7 +22,17 @@ import {
   Icon,
   HStack,
   VStack,
-  Code
+  Code,
+  Input,
+  Textarea,
+  IconButton,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Center
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -30,6 +40,8 @@ import { API_URL, ACCESS_TOKEN } from '../constants';
 import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
+import { FaEdit } from 'react-icons/fa';
+import { IoSave } from 'react-icons/io5';
 
 const Profile = () => {
   const { username } = useParams();
@@ -38,7 +50,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editedBio, setEditedBio] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const cancelRef = React.useRef();
   const toast = useToast();
   const navigate = useNavigate();
   
@@ -131,6 +147,12 @@ const Profile = () => {
 
   const handleFollow = async () => {
     try {
+      // Prevent following yourself
+      if (currentUsername === profileUsername) {
+        setIsErrorModalOpen(true);
+        return;
+      }
+
       const token = localStorage.getItem(ACCESS_TOKEN);
       await axios.post(
         `${API_URL}/api/user/${profileUsername}/follow/`,
@@ -159,6 +181,39 @@ const Profile = () => {
     onOpen();
   };
 
+  const handleUpdateBio = async () => {
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      await axios.patch(
+        `${API_URL}/api/user/${profileUsername}/update/`,
+        { bio: editedBio },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProfile({ ...profile, bio: editedBio });
+      setIsEditingBio(false);
+      toast({
+        title: 'Success',
+        description: 'Bio updated successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error updating bio:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update bio',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   useEffect(() => {
     // Reset state on new profile load
     setLoading(true);
@@ -180,7 +235,7 @@ const Profile = () => {
   if (loading) {
     return (
       <Flex justify="center" align="center" height="80vh">
-        <Spinner size="xl" />
+        <Spinner size="xl" color="#7ac142" thickness="4px" />
       </Flex>
     );
   }
@@ -238,143 +293,245 @@ const Profile = () => {
   }
 
   return (
-    <Box maxW="900px" mx="auto" py={6} px={4}>
+    <Box maxW="900px" mx="auto" py={8} px={4}>
+      {/* Error Modal */}
+      <AlertDialog
+        isOpen={isErrorModalOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setIsErrorModalOpen(false)}
+        isCentered
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent mx={4}>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Cannot Follow Yourself
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              <Center flexDirection="column">
+                <Icon as={GiCook} boxSize="2rem" color="#7ac142" mb={2} />
+                <Text>You cannot follow your own profile!</Text>
+              </Center>
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={() => setIsErrorModalOpen(false)} colorScheme="green">
+                Got it
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
       {profile && (
         <>
           {/* Profile Header */}
-          <Flex mb={8} direction={{ base: 'column', md: 'row' }} align="center">
-            <Avatar 
-              size="2xl" 
-              src={profile.profile_image} 
-              mr={{ base: 0, md: 8 }} 
-              mb={{ base: 4, md: 0 }}
-              icon={<Icon as={GiCook} color="white" boxSize="2.5rem" />}
-              bg="#6246ea"
-            />
-            
-            <Box flex="1">
-              <Flex align="center" mb={4}>
-                <Heading size="lg" mr={4}>{profile.username}</Heading>
-                {!isOwnProfile && (
-                  <Button 
-                    colorScheme="blue" 
-                    variant="outline"
-                    onClick={handleFollow}
+          <Box 
+            bg="white" 
+            borderRadius="2xl" 
+            boxShadow="md" 
+            p={8} 
+            mb={8}
+          >
+            <Flex direction={{ base: 'column', md: 'row' }} align="center">
+              <Avatar 
+                size="2xl" 
+                src={profile.profile_image} 
+                mr={{ base: 0, md: 8 }} 
+                mb={{ base: 4, md: 0 }}
+                icon={<Icon as={GiCook} color="white" boxSize="2.5rem" />}
+                bg="#7ac142"
+              />
+              
+              <Box flex="1">
+                <Flex align="center" mb={4}>
+                  <Heading 
+                    size="xl" 
+                    mr={4}
+                    bgGradient="linear(to-r, #7ac142, #68a939)"
+                    bgClip="text"
+                    letterSpacing="tight"
+                    fontWeight="900"
+                    fontSize="2xl"
                   >
-                    {profile.is_following ? 'Unfollow' : 'Follow'}
-                  </Button>
+                    {profile.username}
+                  </Heading>
+                  {!isOwnProfile && (
+                    <Button 
+                      colorScheme="green" 
+                      variant="outline"
+                      onClick={handleFollow}
+                      borderRadius="xl"
+                      fontWeight="bold"
+                      _hover={{
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'md',
+                      }}
+                      transition="all 0.2s"
+                    >
+                      {profile.is_following ? 'Unfollow' : 'Follow'}
+                    </Button>
+                  )}
+                </Flex>
+                
+                <Flex mb={6} gap={8}>
+                  <Text fontSize="lg" fontWeight="bold">
+                    <Text as="span" color="#7ac142">{posts.length}</Text> Recipes
+                  </Text>
+                  <Text fontSize="lg" fontWeight="bold">
+                    <Text as="span" color="#7ac142">{profile.follower_count || 0}</Text> Followers
+                  </Text>
+                  <Text fontSize="lg" fontWeight="bold">
+                    <Text as="span" color="#7ac142">{profile.following_count || 0}</Text> Following
+                  </Text>
+                </Flex>
+                
+                {isEditingBio ? (
+                  <Flex gap={2}>
+                    <Textarea
+                      value={editedBio}
+                      onChange={(e) => setEditedBio(e.target.value)}
+                      placeholder="Write Something About Yourself..."
+                      size="sm"
+                      resize="vertical"
+                      borderRadius="xl"
+                      focusBorderColor="#7ac142"
+                      fontSize="md"
+                    />
+                    <IconButton
+                      icon={<IoSave />}
+                      onClick={handleUpdateBio}
+                      colorScheme="green"
+                      aria-label="Save Bio"
+                      borderRadius="xl"
+                    />
+                  </Flex>
+                ) : (
+                  <Flex align="center" gap={2}>
+                    <Text fontSize="md" color="#4A5568" fontWeight="500">
+                      {profile.bio || 'TasteBuds Chef In The Making! 👨‍🍳'}
+                    </Text>
+                    {isOwnProfile && (
+                      <IconButton
+                        icon={<FaEdit />}
+                        onClick={() => {
+                          setEditedBio(profile.bio || '');
+                          setIsEditingBio(true);
+                        }}
+                        size="sm"
+                        colorScheme="green"
+                        variant="ghost"
+                        aria-label="Edit Bio"
+                      />
+                    )}
+                  </Flex>
                 )}
+              </Box>
+            </Flex>
+          </Box>
+
+          {/* Recipes Section */}
+          <Box bg="white" borderRadius="2xl" boxShadow="md" p={8}>
+            <Flex justifyContent="center" mb={6}>
+              <HStack spacing={8}>
+                <VStack>
+                  <Icon as={GiCook} boxSize="1.5rem" color="#7ac142" />
+                  <Text 
+                    fontWeight="900" 
+                    color="#7ac142"
+                    fontSize="xl"
+                    letterSpacing="wide"
+                  >
+                    My Recipes
+                  </Text>
+                </VStack>
+              </HStack>
+            </Flex>
+            
+            {/* Recipes Grid */}
+            {posts && posts.length > 0 ? (
+              <Grid 
+                templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }} 
+                gap={6}
+              >
+                {posts.map((post) => (
+                  <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+                    <Box 
+                      position="relative" 
+                      paddingBottom="100%" 
+                      overflow="hidden"
+                      borderRadius="xl"
+                      boxShadow="md"
+                      transition="all 0.2s"
+                      _hover={{
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'lg',
+                      }}
+                    >
+                      <Image 
+                        src={post.image} 
+                        alt={post.caption} 
+                        position="absolute"
+                        top="0"
+                        left="0"
+                        width="100%"
+                        height="100%"
+                        objectFit="cover"
+                      />
+                      <Box
+                        position="absolute"
+                        bottom="0"
+                        left="0"
+                        right="0"
+                        bg="rgba(0,0,0,0.7)"
+                        p={3}
+                        color="white"
+                      >
+                        <Text fontWeight="bold" noOfLines={1}>
+                          {post.recipe_title || post.caption || 'Tasty Recipe'}
+                        </Text>
+                        {post.ingredients && post.ingredients.length > 0 && (
+                          <Text fontSize="sm" noOfLines={1}>
+                            {post.ingredients.length} Ingredients
+                          </Text>
+                        )}
+                      </Box>
+                    </Box>
+                  </GridItem>
+                ))}
+              </Grid>
+            ) : (
+              <Box textAlign="center" py={10}>
+                <Icon as={GiCook} boxSize={12} color="#7ac142" mb={4} />
+                <Text 
+                  fontSize="2xl" 
+                  fontWeight="900" 
+                  color="#2D3748"
+                  mb={4}
+                >
+                  No Recipes Yet
+                </Text>
                 {isOwnProfile && (
                   <Button 
-                    colorScheme="purple" 
-                    variant="outline" 
-                    onClick={() => navigate('/edit-profile')}
-                    ml={2}
+                    as="a" 
+                    href="/create" 
+                    colorScheme="green" 
+                    size="lg"
+                    mt={4}
+                    leftIcon={<Icon as={GiCook} />}
+                    borderRadius="xl"
+                    fontWeight="bold"
+                    px={8}
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s"
                   >
-                    Edit Profile
+                    Create Your First Recipe
                   </Button>
                 )}
-              </Flex>
-              
-              <Flex mb={4}>
-                <Text mr={6}><strong>{posts.length}</strong> recipes</Text>
-                <Text mr={6}><strong>{profile.follower_count || 0}</strong> followers</Text>
-                <Text><strong>{profile.following_count || 0}</strong> following</Text>
-              </Flex>
-              
-              <Text>{profile.bio || 'TasteBuds chef in the making! 👨‍🍳'}</Text>
-            </Box>
-          </Flex>
-          
-          <Divider mb={6} />
-          
-          {/* Recipe Tabs */}
-          <Flex justifyContent="center" mb={6}>
-            <HStack spacing={8}>
-              <VStack>
-                <Icon as={GiCook} boxSize="1.5rem" color="#6246ea" />
-                <Text fontWeight="bold" color="#6246ea">Recipes</Text>
-              </VStack>
-            </HStack>
-          </Flex>
-          
-          {/* Recipes Grid */}
-          {posts && posts.length > 0 ? (
-            <Grid 
-              templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }} 
-              gap={4}
-            >
-              {posts.map((post) => (
-                <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
-                  <Box 
-                    position="relative" 
-                    paddingBottom="100%" 
-                    overflow="hidden"
-                    borderRadius="md"
-                    boxShadow="md"
-                  >
-                    <Image 
-                      src={post.image} 
-                      alt={post.caption} 
-                      position="absolute"
-                      top="0"
-                      left="0"
-                      width="100%"
-                      height="100%"
-                      objectFit="cover"
-                    />
-                    <Box
-                      position="absolute"
-                      bottom="0"
-                      left="0"
-                      right="0"
-                      bg="rgba(0,0,0,0.7)"
-                      p={2}
-                      color="white"
-                    >
-                      <Text fontWeight="bold" noOfLines={1}>
-                        {post.recipe_title || post.caption || 'Tasty Recipe'}
-                      </Text>
-                      {post.ingredients && post.ingredients.length > 0 && (
-                        <Text fontSize="xs" noOfLines={1}>
-                          {post.ingredients.length} ingredients
-                        </Text>
-                      )}
-                    </Box>
-                  </Box>
-                </GridItem>
-              ))}
-            </Grid>
-          ) : (
-            <Box textAlign="center" py={10}>
-              <Icon as={GiCook} boxSize="4rem" color="gray.400" mb={4} />
-              <Text fontSize="lg">No recipes yet</Text>
-              {isOwnProfile && (
-                <Button 
-                  as="a" 
-                  href="/create" 
-                  colorScheme="purple" 
-                  mt={4}
-                  leftIcon={<Icon as={GiCook} />}
-                >
-                  Create Your First Recipe
-                </Button>
-              )}
-            </Box>
-          )}
-          
-          {/* Recipe Modal */}
-          <Modal isOpen={isOpen} onClose={onClose} size="xl">
-            <ModalOverlay />
-            <ModalContent>
-              <ModalCloseButton />
-              <ModalBody p={0}>
-                {selectedPost && (
-                  <Post post={selectedPost} refreshPosts={fetchPosts} />
-                )}
-              </ModalBody>
-            </ModalContent>
-          </Modal>
+              </Box>
+            )}
+          </Box>
         </>
       )}
     </Box>

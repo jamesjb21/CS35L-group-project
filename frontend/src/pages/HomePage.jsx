@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, VStack, Heading, Button, Flex, Spinner, Text } from '@chakra-ui/react';
+import { Box, VStack, Heading, Button, Flex, Spinner, Text, Icon } from '@chakra-ui/react';
 import axios from 'axios';
 import { API_URL } from '../constants';
 import Post from '../components/Post';
 import { Link } from 'react-router-dom';
+import { GiCook } from "react-icons/gi";
+import { IoAddCircle } from "react-icons/io5";
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
@@ -34,25 +36,98 @@ const HomePage = () => {
   }, []);
 
   return (
-    <Box maxW="600px" mx="auto" py={4}>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg">TasteBuds Feed</Heading>
-        <Button as={Link} to="/create" colorScheme="blue">
+    <Box maxW="800px" mx="auto" py={8} px={4}>
+      <Flex 
+        justify="space-between" 
+        align="center" 
+        mb={8}
+        bg="white"
+        p={6}
+        borderRadius="2xl"
+        boxShadow="md"
+      >
+        <Flex align="center" gap={4}>
+          <Icon as={GiCook} boxSize={10} color="#7ac142" />
+          <Heading 
+            size="xl" 
+            bgGradient="linear(to-r, #7ac142, #68a939)" 
+            bgClip="text"
+            letterSpacing="tight"
+            fontWeight="900"
+            fontSize="3xl"
+          >
+            Your TasteBuds Feed
+          </Heading>
+        </Flex>
+        <Button
+          as={Link}
+          to="/create"
+          colorScheme="green"
+          size="lg"
+          leftIcon={<IoAddCircle size="24px" />}
+          borderRadius="xl"
+          fontWeight="bold"
+          px={8}
+          _hover={{
+            transform: 'translateY(-2px)',
+            boxShadow: 'lg',
+          }}
+          transition="all 0.2s"
+        >
           Add Recipe
         </Button>
       </Flex>
 
       {loading ? (
         <Flex justify="center" my={10}>
-          <Spinner size="xl" />
+          <Spinner size="xl" color="#7ac142" thickness="4px" />
         </Flex>
       ) : error ? (
-        <Text color="red.500" textAlign="center">{error}</Text>
+        <Text color="red.500" textAlign="center" fontSize="xl" fontWeight="bold" letterSpacing="wide">{error}</Text>
       ) : posts.length === 0 ? (
-        <Box textAlign="center" my={10}>
-          <Text fontSize="lg" mb={4}>No recipes in your feed yet.</Text>
-          <Text>Follow users or create your first recipe!</Text>
-          <Button as={Link} to="/explore" colorScheme="blue" mt={4}>
+        <Box 
+          textAlign="center" 
+          my={10} 
+          p={10} 
+          bg="white" 
+          borderRadius="2xl" 
+          boxShadow="md"
+        >
+          <Icon as={GiCook} boxSize={16} color="#7ac142" mb={6} />
+          <Text 
+            fontSize="3xl" 
+            fontWeight="900" 
+            mb={4} 
+            color="#2D3748"
+            letterSpacing="wide"
+          >
+            No recipes in your feed yet
+          </Text>
+          <Text 
+            fontSize="xl" 
+            color="#4A5568" 
+            mb={8}
+            fontWeight="600"
+            letterSpacing="wide"
+          >
+            Follow users or create your first recipe to get started!
+          </Text>
+          <Button
+            as={Link}
+            to="/explore"
+            colorScheme="green"
+            size="lg"
+            fontSize="lg"
+            fontWeight="bold"
+            borderRadius="xl"
+            px={8}
+            py={6}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+            }}
+            transition="all 0.2s"
+          >
             Explore Recipes
           </Button>
         </Box>

@@ -79,9 +79,9 @@ const Navbar = () => {
     }
 
     return (
-        <Flex w='100vw' h='70px' bg='#6246ea' borderBottom="1px" borderColor="gray.200" justifyContent='center' alignItems='center'>
-            <HStack w='90%' justifyContent='space-between' color='white'>
-                <HStack>
+        <Flex w='100vw' h='70px' bg='#7ac142' borderBottom="1px" borderColor="gray.200" alignItems='center'>
+            <HStack w='100%' px='4' justifyContent='space-between' color='white'>
+                <HStack spacing='2'>
                     <GiCook size='26px' />
                     <Text fontSize='24px' fontWeight='bold' cursor="pointer" onClick={() => handleNavigate('home')}>
                         TasteBuds
