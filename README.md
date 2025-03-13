@@ -20,33 +20,33 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 Here's a visual tour of our application:
 
 ### Start Page
-![Start Page](public/home-feed.png)
+![Start Page](frontend/public/start-page.png)
 *The home feed displays recipes from users you follow, with options to like, comment, and save.*
 
 ### Authentication
-![Signup Page](public/signup-feed.png)
+![Signup Page](frontend/public/signup-feed.png)
 
-![Login Page](public/login-page.png)
+![Login Page](frontend/public/login-page.png)
 *Secure authentication with a clean, user-friendly interface.*
 
 ### Home Feed
-![Home Feed](public/home-feed.png)
+![Home Feed](frontend/public/home-feed.png)
 *The home feed displays recipes from users you follow, with options to like, comment, and save.*
 
 ### User Profile
-![Profile Page](public/profile-page.png)
+![Profile Page](frontend/public/profile-page.png)
 *User profiles showcase a user's posted recipes, bio, and followers/following counts.*
 
 ### Recipe Creation
-![Create Recipe](public/create-recipe.png)
+![Create Recipe](frontend/public/create-recipe.png)
 *The recipe creation page allows users to upload images, ingredients, and step-by-step instructions.*
 
 ### Search & Discovery
-![Search Page](public/search-page.png)
+![Search Page](frontend/public/search-page.png)
 *Search for recipes or users with our powerful search and filtering capabilities.*
 
 ### Explore
-![Explore Page](public/explore-page.png)
+![Explore Page](frontend/public/explore-page.png)
 *Discover trending and popular recipes from around the community.*
 
 ## 🚀 Setup Instructions
