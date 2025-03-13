@@ -14,6 +14,8 @@ const SignUpForm = ({ route, method }) => {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errors, setErrors] = useState({});
 
   const name = method === "login" ? "Login" : "Register";
 
@@ -33,10 +35,19 @@ const SignUpForm = ({ route, method }) => {
   const handleSubmit = async (e) => {
       e.preventDefault();
       setLoading(true);
+      setErrorMessage("");
+      setErrors({});
 
-      // Prevent empty submissions
-      if (!username || !password || !firstName || !lastName) {
-          alert("Please enter both username and password.");
+      // Form validation
+      const newErrors = {};
+      if (!firstName) newErrors.firstName = "First name is required";
+      if (!lastName) newErrors.lastName = "Last name is required";
+      if (!username) newErrors.username = "Username is required";
+      if (!password) newErrors.password = "Password is required";
+      if (password && password.length < 8) newErrors.password = "Password must be at least 8 characters";
+
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
           setLoading(false);
           return;
       }
@@ -54,8 +65,37 @@ const SignUpForm = ({ route, method }) => {
               setShowSuccess(true);
           }
       } catch (error) {
-          console.error("API error:", error.response?.data || error.message);
-          alert(error.response?.data?.message || "An error occurred. Please try again.");
+          console.error("API error:", error);
+          
+          // Handle different types of errors
+          if (error.response) {
+              // Server responded with an error status
+              const responseData = error.response.data;
+              
+              // Handle Django REST Framework validation errors (usually in format: {"field": ["error message"]})
+              if (responseData.username) setErrors(prev => ({ ...prev, username: responseData.username.join(' ') }));
+              if (responseData.password) setErrors(prev => ({ ...prev, password: responseData.password.join(' ') }));
+              if (responseData.firstName) setErrors(prev => ({ ...prev, firstName: responseData.firstName.join(' ') }));
+              if (responseData.lastName) setErrors(prev => ({ ...prev, lastName: responseData.lastName.join(' ') }));
+              
+              // Handle non-field errors
+              if (responseData.non_field_errors) {
+                  setErrorMessage(responseData.non_field_errors.join(' '));
+              } else if (responseData.detail) {
+                  setErrorMessage(responseData.detail);
+              } else if (typeof responseData === 'string') {
+                  setErrorMessage(responseData);
+              } else if (!Object.keys(errors).length) {
+                  // If we haven't set any field-specific errors but there was a server error
+                  setErrorMessage("Server error. Please try again later.");
+              }
+          } else if (error.request) {
+              // Request was made but no response received (network error)
+              setErrorMessage("No response from server. Please check your internet connection and try again.");
+          } else {
+              // Something else happened while setting up the request
+              setErrorMessage("An error occurred. Please try again.");
+          }
       } finally {
           setLoading(false);
       }
@@ -80,16 +120,25 @@ const SignUpForm = ({ route, method }) => {
           <div className="signup-form-container">
             <div className="form-wrapper">
               <h1 className="signup-title">Create your free account now!</h1>
+              
+              {/* General error message */}
+              {errorMessage && (
+                <div className="error-message">
+                  {errorMessage}
+                </div>
+              )}
+              
               <form className="signup-form" onSubmit={handleSubmit}>
                 <div className="name-row">
-                <div className="form-group">
+                  <div className="form-group">
                     <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First Name"
-                      className="form-input"
+                      className={`form-input ${errors.firstName ? 'input-error' : ''}`}
                     />
+                    {errors.firstName && <div className="error-text">{errors.firstName}</div>}
                   </div>
                   <div className="form-group">
                     <input
@@ -97,8 +146,9 @@ const SignUpForm = ({ route, method }) => {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last Name"
-                      className="form-input"
+                      className={`form-input ${errors.lastName ? 'input-error' : ''}`}
                     />
+                    {errors.lastName && <div className="error-text">{errors.lastName}</div>}
                   </div>
                 </div>
                 <div className="form-group">
@@ -107,8 +157,9 @@ const SignUpForm = ({ route, method }) => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
-                    className="form-input"
+                    className={`form-input ${errors.username ? 'input-error' : ''}`}
                   />
+                  {errors.username && <div className="error-text">{errors.username}</div>}
                 </div>
                 <div className="form-group">
                   <input
@@ -116,11 +167,12 @@ const SignUpForm = ({ route, method }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="form-input"
+                    className={`form-input ${errors.password ? 'input-error' : ''}`}
                   />
+                  {errors.password && <div className="error-text">{errors.password}</div>}
                 </div>
-                <button type="submit" className="signup-button">
-                  {name}
+                <button type="submit" className="signup-button" disabled={loading}>
+                  {loading ? "Processing..." : name}
                 </button>
               </form>
 

@@ -152,6 +152,35 @@
     background-color: #f0f0f0;
   }
   
+  /* Error message styles */
+  .error-message {
+    background-color: #fff6f6;
+    color: #9f3a38;
+    border: 1px solid #e0b4b4;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .error-text {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: left;
+  }
+  
+  .input-error {
+    border-color: #e74c3c !important;
+    background-color: #fef6f6;
+  }
+  
+  .input-error:focus {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 1px #e74c3c;
+  }
+  
   /* Success message styles */
   .success-message {
     display: flex;
