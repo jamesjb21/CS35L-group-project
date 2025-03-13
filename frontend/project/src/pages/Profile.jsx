@@ -273,7 +273,14 @@ const Profile = () => {
    * @param {Object} post - The post object to display in the modal
    */
   const openPostModal = (post) => {
-    setSelectedPost(post);
+    // Parse recipe data when opening the modal
+    try {
+      const recipeData = JSON.parse(post.caption);
+      setSelectedPost({ ...post, recipeData });
+    } catch (e) {
+      // If parsing fails, use caption as title
+      setSelectedPost({ ...post, recipeData: { title: post.caption } });
+    }
     onOpen();
   };
 
@@ -396,7 +403,7 @@ const Profile = () => {
   }
 
   return (
-    <Box maxW="900px" mx="auto" py={8} px={4}>
+    <Box maxW="1200px" mx="auto" px={4} py={8}>
       {/* Error Modal */}
       <AlertDialog
         isOpen={isErrorModalOpen}
@@ -567,56 +574,60 @@ const Profile = () => {
             </Flex>
             
             {/* Recipes Grid */}
-            {posts && posts.length > 0 ? (
+            {posts.length > 0 ? (
               <Grid 
                 templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }} 
                 gap={6}
               >
-                {posts.map((post) => (
-                  <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
-                    <Box 
-                      position="relative" 
-                      paddingBottom="100%" 
-                      overflow="hidden"
-                      borderRadius="xl"
-                      boxShadow="md"
-                      transition="all 0.2s"
-                      _hover={{
-                        transform: 'translateY(-2px)',
-                        boxShadow: 'lg',
-                      }}
-                    >
-                      <Image 
-                        src={post.image} 
-                        alt={post.caption} 
-                        position="absolute"
-                        top="0"
-                        left="0"
-                        width="100%"
-                        height="100%"
-                        objectFit="cover"
-                      />
-                      <Box
-                        position="absolute"
-                        bottom="0"
-                        left="0"
-                        right="0"
-                        bg="rgba(0,0,0,0.7)"
-                        p={3}
-                        color="white"
+                {posts.map((post) => {
+                  // Parse recipe data for each post
+                  let recipeData;
+                  try {
+                    recipeData = JSON.parse(post.caption);
+                  } catch (e) {
+                    recipeData = { title: post.caption };
+                  }
+
+                  return (
+                    <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+                      <Box 
+                        position="relative" 
+                        borderRadius="xl"
+                        overflow="hidden"
+                        boxShadow="lg"
+                        transition="all 0.2s"
+                        _hover={{
+                          transform: 'translateY(-4px)',
+                          boxShadow: 'xl',
+                        }}
+                        bg="white"
                       >
-                        <Text fontWeight="bold" noOfLines={1}>
-                          {post.recipe_title || post.caption || 'Tasty Recipe'}
-                        </Text>
-                        {post.ingredients && post.ingredients.length > 0 && (
-                          <Text fontSize="sm" noOfLines={1}>
-                            {post.ingredients.length} Ingredients
-                          </Text>
-                        )}
+                        <Box position="relative" paddingTop="56.25%">
+                          <Image 
+                            src={post.image} 
+                            alt={recipeData.title || 'Recipe'} 
+                            position="absolute"
+                            top="0"
+                            left="0"
+                            width="100%"
+                            height="100%"
+                            objectFit="cover"
+                          />
+                        </Box>
+                        <Box p={4}>
+                          <Heading size="md" mb={2} noOfLines={2}>
+                            {recipeData.title || 'Untitled Recipe'}
+                          </Heading>
+                          {recipeData.ingredients && (
+                            <Text fontSize="sm" color="gray.600">
+                              {recipeData.ingredients.length} Ingredients
+                            </Text>
+                          )}
+                        </Box>
                       </Box>
-                    </Box>
-                  </GridItem>
-                ))}
+                    </GridItem>
+                  );
+                })}
               </Grid>
             ) : (
               <Box textAlign="center" py={10}>
@@ -652,6 +663,180 @@ const Profile = () => {
               </Box>
             )}
           </Box>
+
+          {/* Recipe Details Modal */}
+          <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            isCentered
+            motionPreset="scale"
+            size="xl"
+          >
+            <ModalOverlay 
+              bg="blackAlpha.800" 
+              backdropFilter="blur(8px)"
+            />
+            <ModalContent 
+              borderRadius="2xl" 
+              overflow="hidden"
+              boxShadow="2xl"
+              maxW="800px"
+              w="90%"
+              maxH="90vh"
+              mx="auto"
+              my="auto"
+              position="relative"
+              bg="white"
+            >
+              <ModalCloseButton
+                position="absolute"
+                top={2}
+                right={2}
+                zIndex={2}
+                size="sm"
+                color="white"
+                bg="blackAlpha.400"
+                borderRadius="full"
+                _hover={{
+                  bg: "blackAlpha.600",
+                  transform: "scale(1.1)",
+                }}
+                transition="all 0.2s"
+              />
+              
+              {selectedPost && (
+                <>
+                  <Box position="relative">
+                    <Image
+                      src={selectedPost.image}
+                      alt={selectedPost.recipeData?.title || 'Recipe'}
+                      width="100%"
+                      height="350px"
+                      objectFit="cover"
+                    />
+                    <Box
+                      position="absolute"
+                      bottom={0}
+                      left={0}
+                      right={0}
+                      bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
+                      p={6}
+                      pt={24}
+                    >
+                      <Heading size="xl" color="white" letterSpacing="tight">
+                        {selectedPost.recipeData?.title || 'Untitled Recipe'}
+                      </Heading>
+                    </Box>
+                  </Box>
+
+                  <ModalBody 
+                    p={8}
+                    bg="white"
+                    maxH="calc(90vh - 350px)"
+                    overflowY="auto"
+                    css={{
+                      '&::-webkit-scrollbar': {
+                        width: '4px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'transparent',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: '#CBD5E0',
+                        borderRadius: '20px',
+                      },
+                      '&::-webkit-scrollbar-thumb:hover': {
+                        background: '#A0AEC0',
+                      },
+                    }}
+                  >
+                    <VStack spacing={8} align="stretch">
+                      {isOwnProfile && (
+                        <Button
+                          leftIcon={<FaEdit />}
+                          colorScheme="green"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/create?edit=${selectedPost.id}`);
+                            onClose();
+                          }}
+                          size="lg"
+                          width="100%"
+                          boxShadow="md"
+                          _hover={{
+                            transform: 'translateY(-2px)',
+                            boxShadow: 'lg',
+                          }}
+                          mb={2}
+                        >
+                          Edit Recipe
+                        </Button>
+                      )}
+
+                      {selectedPost.recipeData?.ingredients && selectedPost.recipeData.ingredients.length > 0 && (
+                        <Box 
+                          bg="gray.50" 
+                          p={7} 
+                          borderRadius="xl"
+                          boxShadow="sm"
+                          border="1px solid"
+                          borderColor="gray.100"
+                        >
+                          <Heading size="lg" mb={5} color="#2D3748">
+                            Ingredients
+                          </Heading>
+                          <VStack align="stretch" spacing={3}>
+                            {selectedPost.recipeData.ingredients.map((ingredient, index) => (
+                              <Text 
+                                key={index}
+                                fontSize="lg"
+                                color="#4A5568"
+                                display="flex"
+                                alignItems="center"
+                              >
+                                <Box 
+                                  as="span" 
+                                  mr={3}
+                                  color="#7ac142"
+                                  fontSize="1.2em"
+                                >
+                                  •
+                                </Box>
+                                {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                              </Text>
+                            ))}
+                          </VStack>
+                        </Box>
+                      )}
+
+                      {selectedPost.recipeData?.instructions && (
+                        <Box 
+                          bg="gray.50" 
+                          p={7} 
+                          borderRadius="xl"
+                          boxShadow="sm"
+                          border="1px solid"
+                          borderColor="gray.100"
+                        >
+                          <Heading size="lg" mb={5} color="#2D3748">
+                            Instructions
+                          </Heading>
+                          <Text 
+                            whiteSpace="pre-line"
+                            fontSize="lg"
+                            color="#4A5568"
+                            lineHeight="1.8"
+                          >
+                            {selectedPost.recipeData.instructions}
+                          </Text>
+                        </Box>
+                      )}
+                    </VStack>
+                  </ModalBody>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
         </>
       )}
 
