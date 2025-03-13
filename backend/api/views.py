@@ -14,6 +14,7 @@ from .serializers import (
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
+import json
 
 # Create your views here.
 class CreateUserView(generics.CreateAPIView):
@@ -161,6 +162,40 @@ def explore(request):
     try:
         posts = Post.objects.all().order_by('-created_at')[:20]  # Limit to 20 recent posts
         serializer = PostSerializer(posts, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_recipes(request):
+    """Search for recipes by title"""
+    try:
+        query = request.query_params.get('query', '')
+        if not query:
+            return Response([])
+        
+        # Search for posts where the caption contains the query
+        # Since recipe data is stored as JSON in the caption field,
+        # we need to filter posts that have a title containing the query
+        posts = Post.objects.all()
+        matching_posts = []
+        
+        for post in posts:
+            try:
+                # Try to parse the caption as JSON
+                recipe_data = json.loads(post.caption)
+                # Check if it has a title field and if the title contains the query
+                if 'title' in recipe_data and query.lower() in recipe_data['title'].lower():
+                    matching_posts.append(post)
+            except (json.JSONDecodeError, AttributeError):
+                # If the caption is not valid JSON or doesn't have a title field, skip it
+                continue
+        
+        # Limit to 10 results
+        matching_posts = matching_posts[:10]
+        
+        serializer = PostSerializer(matching_posts, many=True, context={'request': request})
         return Response(serializer.data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

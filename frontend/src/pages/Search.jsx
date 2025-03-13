@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Input, 
@@ -12,15 +12,13 @@ import {
   Spinner,
   Button,
   useToast,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   Divider,
   Image,
   Grid,
   GridItem,
+  SimpleGrid,
+  Stack,
+  Center,
 } from '@chakra-ui/react';
 import { IoSearch } from 'react-icons/io5';
 import { GiCook } from 'react-icons/gi';
@@ -36,21 +34,34 @@ function Search() {
   const toast = useToast();
   const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-    
+  // Set up a debounce function for the search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm.trim()) {
+        performSearch(searchTerm);
+      } else {
+        // Clear results if search term is empty
+        setUsers([]);
+        setRecipes([]);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  const performSearch = async (query) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('access_token');
       
       // Make both API calls in parallel
       const [usersResponse, recipesResponse] = await Promise.all([
-        axios.get(`${API_URL}/api/users/search/?query=${searchTerm}`, {
+        axios.get(`${API_URL}/api/users/search/?query=${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }),
-        axios.get(`${API_URL}/api/recipes/search/?query=${searchTerm}`, {
+        axios.get(`${API_URL}/api/recipes/search/?query=${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -73,6 +84,10 @@ function Search() {
     }
   };
 
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   const viewProfile = (username) => {
     navigate(`/profile/${username}`);
   };
@@ -92,7 +107,7 @@ function Search() {
   };
 
   return (
-    <Box maxW="800px" mx="auto" py={6} px={4}>
+    <Box maxW="1200px" mx="auto" py={6} px={4}>
       <Heading 
         size="xl" 
         mb={6} 
@@ -101,93 +116,47 @@ function Search() {
         bgClip="text"
         fontWeight="bold"
       >
-        Search
+        Find Users & Recipes
       </Heading>
       
-      <Flex mb={6}>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none" color="gray.400">
-            <IoSearch />
+      <Center mb={8}>
+        <InputGroup size="lg" maxW="600px" width="80vw">
+          <InputLeftElement pointerEvents="none" color="gray.400" height="100%">
+            <IoSearch size={24} />
           </InputLeftElement>
           <Input 
             placeholder="Search for users or recipes..." 
             value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            pl="40px"
+            onChange={handleInputChange}
+            pl="50px"
+            py={4}
             size="lg"
+            fontSize="lg"
             borderRadius="md"
-            boxShadow="sm"
-            _focus={{ borderColor: "green.400", boxShadow: "outline" }}
+            boxShadow="md"
+            border="2px solid"
+            borderColor="green.400"
+            _focus={{ boxShadow: "0 0 0 2px #7ac142" }}
           />
         </InputGroup>
-        <Button 
-          ml={2} 
-          colorScheme="green" 
-          onClick={handleSearch} 
-          isLoading={loading}
-          size="lg"
-        >
-          Search
-        </Button>
-      </Flex>
+      </Center>
       
       {loading ? (
         <Flex justify="center" my={10}>
           <Spinner size="xl" color="green.400" thickness="4px" />
         </Flex>
       ) : (
-        <Tabs variant="enclosed" colorScheme="green" mt={4}>
-          <TabList>
-            <Tab>Users ({users.length})</Tab>
-            <Tab>Recipes ({recipes.length})</Tab>
-          </TabList>
-          
-          <TabPanels>
-            {/* Users Tab */}
-            <TabPanel>
-              <VStack spacing={4} align="stretch">
-                {users.length > 0 ? (
-                  users.map((user) => (
-                    <Flex 
-                      key={user.username} 
-                      p={4} 
-                      borderWidth="1px" 
-                      borderRadius="md" 
-                      align="center"
-                      cursor="pointer"
-                      onClick={() => viewProfile(user.username)}
-                      _hover={{ bg: 'gray.50', borderColor: "green.300" }}
-                      boxShadow="sm"
-                    >
-                      <Avatar 
-                        size="md" 
-                        name={user.username} 
-                        src={user.profile_image} 
-                        mr={4} 
-                        bg="#7ac142"
-                        icon={<GiCook color="white" />}
-                      />
-                      <Box>
-                        <Text fontWeight="bold">{user.username}</Text>
-                        <Text fontSize="sm" color="gray.600">
-                          {user.follower_count} followers • {user.posts_count} posts
-                        </Text>
-                      </Box>
-                    </Flex>
-                  ))
-                ) : searchTerm ? (
-                  <Text textAlign="center" color="gray.500" py={8}>No users found matching "{searchTerm}"</Text>
-                ) : (
-                  <Text textAlign="center" color="gray.500" py={8}>Enter a search term to find users</Text>
-                )}
-              </VStack>
-            </TabPanel>
-            
-            {/* Recipes Tab */}
-            <TabPanel>
+        searchTerm ? (
+          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
+            {/* Recipes Section (Left) */}
+            <Box>
+              <Heading size="md" mb={4} color="green.600" display="flex" alignItems="center">
+                <GiCook style={{marginRight: '8px'}} /> 
+                Recipes ({recipes.length})
+              </Heading>
+              
               {recipes.length > 0 ? (
-                <Grid templateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={6}>
+                <Grid templateColumns="repeat(auto-fill, minmax(220px, 1fr))" gap={6}>
                   {recipes.map((recipe) => {
                     const recipeData = parseRecipeData(recipe.caption);
                     return (
@@ -207,8 +176,9 @@ function Search() {
                             boxShadow: "lg",
                             borderColor: "green.300"
                           }}
+                          height="100%"
                         >
-                          <Box position="relative" height="180px">
+                          <Box position="relative" height="150px">
                             <Image 
                               src={recipe.image} 
                               alt={recipeData.title} 
@@ -243,30 +213,73 @@ function Search() {
                     );
                   })}
                 </Grid>
-              ) : searchTerm ? (
-                <Text textAlign="center" color="gray.500" fontSize="lg" py={8}>
+              ) : (
+                <Text textAlign="center" color="gray.500" fontSize="lg" py={6}>
                   No recipes found matching "{searchTerm}"
                 </Text>
-              ) : (
-                <Flex 
-                  direction="column" 
-                  align="center" 
-                  justify="center" 
-                  py={8} 
-                  color="gray.500"
-                >
-                  <GiCook size={60} />
-                  <Text mt={4} fontSize="lg">
-                    Search for delicious recipes by title
-                  </Text>
-                  <Text fontSize="md">
-                    Try searching for "pizza", "pasta", or "cake"
-                  </Text>
-                </Flex>
               )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+            </Box>
+            
+            {/* Users Section (Right) */}
+            <Box>
+              <Heading size="md" mb={4} color="green.600" display="flex" alignItems="center">
+                <Box as="span" mr={2}>👤</Box> 
+                Users ({users.length})
+              </Heading>
+              
+              <VStack spacing={4} align="stretch">
+                {users.length > 0 ? (
+                  users.map((user) => (
+                    <Flex 
+                      key={user.username} 
+                      p={4} 
+                      borderWidth="1px" 
+                      borderRadius="md" 
+                      align="center"
+                      cursor="pointer"
+                      onClick={() => viewProfile(user.username)}
+                      _hover={{ bg: 'gray.50', borderColor: "green.300" }}
+                      boxShadow="sm"
+                    >
+                      <Avatar 
+                        size="md" 
+                        name={user.username} 
+                        src={user.profile_image} 
+                        mr={4} 
+                        bg="#7ac142"
+                        icon={<GiCook color="white" />}
+                      />
+                      <Box>
+                        <Text fontWeight="bold">{user.username}</Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {user.follower_count} followers • {user.posts_count} posts
+                        </Text>
+                      </Box>
+                    </Flex>
+                  ))
+                ) : (
+                  <Text textAlign="center" color="gray.500" py={6}>No users found matching "{searchTerm}"</Text>
+                )}
+              </VStack>
+            </Box>
+          </SimpleGrid>
+        ) : (
+          <Flex 
+            direction="column" 
+            align="center" 
+            justify="center" 
+            py={12} 
+            color="gray.500"
+          >
+            <GiCook size={80} color="#7ac142" />
+            <Text mt={6} fontSize="xl" fontWeight="medium">
+              Search for users or delicious recipes
+            </Text>
+            <Text fontSize="md" mt={2}>
+              Start typing to search for username or recipe titles
+            </Text>
+          </Flex>
+        )
       )}
     </Box>
   );
