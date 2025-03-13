@@ -24,31 +24,46 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 
 ### Setting up the App
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/jamesjb21/CS35L-group-project.git
+   cd CS35L-group-project
+   ```
+
 2. Create a virtual environment:
+
    ```bash
    python -m venv <environment_name>
    source <environment_name>/bin/activate *for linux/macos
    <environment_name>\Scripts\activate *for windows
 
    deactivate *deactivate environment
-3. install backend packages
+   
+3. Install backend packages
+
    ```bash
    cd backend
    pip install -U -r requirements.txt
-4. install front packages 
+   
+4. Start the backend server:
+
    ```bash
-   cd ..
-   cd frontend
-   npm install
-5. Activate backend
-   ```bash
-   cd backend
+   cd ../backend
    python manage.py makemigrations
    python manage.py migrate
    python manage.py runserver
-6. Activate frontend
+   ```
+
+5. Install frontend packages 
+
    ```bash
-   cd frontend
+   cd ../frontend
+   npm install
+   ```   
+
+6. Start the frontend:
+
+   ```bash
+   cd ../frontend
    npm run dev
+   ```
