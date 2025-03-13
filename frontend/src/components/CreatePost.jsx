@@ -18,11 +18,10 @@ import {
   Container,
   NumberInput,
   NumberInputField,
-  Heading,
-  Checkbox
+  Heading
 } from '@chakra-ui/react';
 import { IoAdd, IoChevronBack } from 'react-icons/io5';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaUtensils } from 'react-icons/fa';
 import axios from 'axios';
 import { API_URL } from '../constants';
 import { useNavigate } from 'react-router-dom';
@@ -41,13 +40,12 @@ const CreatePost = () => {
   const [currentUnit, setCurrentUnit] = useState('tbsp');
   const [customUnit, setCustomUnit] = useState('');
   const [isCustomUnit, setIsCustomUnit] = useState(false);
-  const [skipQuantity, setSkipQuantity] = useState(false);
   
   const toast = useToast();
   const navigate = useNavigate();
 
   const unitOptions = [
-    'tbsp', 'tsp', 'cup', 'oz', 'g', 'kg', 'lb', 'ml', 'L', 'pinch', 'to taste', 'count', 'other'
+    'none', 'tbsp', 'tsp', 'cup', 'oz', 'g', 'kg', 'lb', 'ml', 'L', 'pinch', 'to taste', 'count', 'other'
   ];
 
   const handleImageChange = (e) => {
@@ -80,15 +78,15 @@ const CreatePost = () => {
       const newIngredient = {
         id: Date.now(),
         name: currentIngredient.trim(),
-        quantity: skipQuantity ? 0 : currentQuantity,
-        unit: skipQuantity ? '' : (isCustomUnit ? customUnit.trim() || 'custom' : currentUnit)
+        quantity: currentUnit === 'none' ? 0 : currentQuantity,
+        unit: currentUnit === 'none' ? '' : (isCustomUnit ? customUnit.trim() || 'custom' : currentUnit)
       };
 
       setIngredients([...ingredients, newIngredient]);
       setCurrentIngredient('');
       
-      // Reset quantity if not skipping
-      if (!skipQuantity) {
+      // Reset quantity if not using 'none'
+      if (currentUnit !== 'none') {
         setCurrentQuantity(1);
         if (isCustomUnit) {
           setCustomUnit('');
@@ -220,6 +218,28 @@ const CreatePost = () => {
 
   return (
     <Container maxW="900px" mx="auto" p={4}>
+      {/* NOTE: If there's another "Create New Recipe" title showing on the page,
+          it might be coming from a parent component or layout that's wrapping this component.
+          Check files like: 
+          - frontend/src/pages/CreateRecipe.jsx 
+          - Any layout components that might include a title */}
+      <Box textAlign="center" mb={10}>
+        <Heading 
+          as="h1"
+          size="2xl" 
+          fontWeight="bold"
+          bgGradient="linear(to-r, green.400, teal.500)" 
+          bgClip="text"
+          letterSpacing="wider"
+          pb={2}
+          borderBottom="4px solid"
+          borderColor="green.400"
+          display="inline-block"
+        >
+          Create New Recipe
+        </Heading>
+      </Box>
+      
       <form onSubmit={handleSubmit}>
         <VStack spacing={8} align="stretch">
           <FormControl isRequired>
@@ -281,65 +301,72 @@ const CreatePost = () => {
                   _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
                 />
                 
-                {!skipQuantity && (
-                  <>
-                    <NumberInput 
-                      min={0.1} 
-                      precision={2} 
-                      step={0.5} 
-                      value={currentQuantity}
-                      onChange={(valueString) => setCurrentQuantity(valueString)}
-                      flex="1"
+                {currentUnit !== 'none' && (
+                  <NumberInput 
+                    min={0.1} 
+                    precision={2} 
+                    step={0.5} 
+                    value={currentQuantity}
+                    onChange={(valueString) => setCurrentQuantity(valueString)}
+                    flex="1"
+                    size="lg"
+                  >
+                    <NumberInputField 
+                      p={5}
+                      borderRadius="md"
+                      boxShadow="sm"
+                      _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                    />
+                  </NumberInput>
+                )}
+                
+                {!isCustomUnit ? (
+                  <Select 
+                    value={currentUnit} 
+                    onChange={handleUnitChange}
+                    flex="1"
+                    size="lg"
+                    p={2}
+                    height="60px"
+                    borderRadius="md"
+                    boxShadow="sm"
+                    css={{
+                      // This completely removes the native arrow icon
+                      WebkitAppearance: "none",
+                      MozAppearance: "none",
+                      appearance: "none",
+                      backgroundImage: "none"
+                    }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                  >
+                    {unitOptions.map(unit => (
+                      <option key={unit} value={unit}>
+                        {unit === 'none' ? 'No Unit' : unit}
+                      </option>
+                    ))}
+                  </Select>
+                ) : (
+                  <Flex flex="1">
+                    <Input
+                      placeholder="Custom unit"
+                      value={customUnit}
+                      onChange={(e) => setCustomUnit(e.target.value)}
+                      borderRightRadius="0"
                       size="lg"
-                    >
-                      <NumberInputField 
-                        p={5}
-                        borderRadius="md"
-                        boxShadow="sm"
-                        _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
-                      />
-                    </NumberInput>
-                    
-                    {!isCustomUnit ? (
-                      <Select 
-                        value={currentUnit} 
-                        onChange={handleUnitChange}
-                        flex="1"
-                        size="lg"
-                        p={2}
-                        height="60px"
-                        borderRadius="md"
-                        boxShadow="sm"
-                        _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
-                      >
-                        {unitOptions.map(unit => (
-                          <option key={unit} value={unit}>{unit}</option>
-                        ))}
-                      </Select>
-                    ) : (
-                      <Flex flex="1">
-                        <Input
-                          placeholder="Custom unit"
-                          value={customUnit}
-                          onChange={(e) => setCustomUnit(e.target.value)}
-                          borderRightRadius="0"
-                          size="lg"
-                          p={5}
-                          boxShadow="sm"
-                          _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
-                        />
-                        <IconButton
-                          icon={<IoChevronBack />}
-                          onClick={switchToStandardUnits}
-                          colorScheme="blue"
-                          aria-label="Back to standard units"
-                          borderLeftRadius="0"
-                          title="Switch back to standard units"
-                          height="60px"
-                        />
-                      </Flex>
-                    )}
-                  </>
+                      p={5}
+                      boxShadow="sm"
+                      _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                    />
+                    <IconButton
+                      icon={<IoChevronBack />}
+                      onClick={switchToStandardUnits}
+                      colorScheme="green"
+                      aria-label="Back to standard units"
+                      borderLeftRadius="0"
+                      title="Switch back to standard units"
+                      height="60px"
+                    />
+                  </Flex>
                 )}
                 
                 <IconButton
@@ -353,15 +380,9 @@ const CreatePost = () => {
                 />
               </HStack>
               
-              <Checkbox 
-                isChecked={skipQuantity} 
-                onChange={(e) => setSkipQuantity(e.target.checked)}
-                colorScheme="green"
-                size="lg"
-                p={2}
-              >
-                Add ingredient name only (no quantity/unit)
-              </Checkbox>
+              <Text color="gray.600" fontSize="sm" pl={2}>
+                Select "No Unit" option to add ingredient name only (like "salt" or "black pepper")
+              </Text>
             </VStack>
             
             <Box mt={4}>
@@ -419,13 +440,28 @@ const CreatePost = () => {
           
           <Button
             type="submit"
-            colorScheme="blue"
+            bg="green.500"
+            color="white"
             isLoading={isLoading}
             size="lg"
             width="100%"
-            fontSize="lg"
-            py={7}
+            fontSize="xl"
+            py={8}
             mt={6}
+            boxShadow="md"
+            _hover={{ 
+              bg: "green.600",
+              transform: "translateY(-2px)",
+              boxShadow: "lg"
+            }}
+            _active={{
+              bg: "green.700",
+              transform: "translateY(0)",
+              boxShadow: "sm"
+            }}
+            leftIcon={<FaUtensils />}
+            borderRadius="md"
+            transition="all 0.2s"
           >
             Share Recipe
           </Button>
