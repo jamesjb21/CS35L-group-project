@@ -32,7 +32,10 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Center
+  Center,
+  ModalHeader,
+  List,
+  ListItem
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -40,7 +43,7 @@ import { API_URL, ACCESS_TOKEN } from '../constants';
 import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaUserFriends } from 'react-icons/fa';
 import { IoSave } from 'react-icons/io5';
 
 const Profile = () => {
@@ -54,6 +57,13 @@ const Profile = () => {
   const [editedBio, setEditedBio] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const {
+    isOpen: isFollowersOpen,
+    onOpen: onFollowersOpen,
+    onClose: onFollowersClose
+  } = useDisclosure();
   const cancelRef = React.useRef();
   const toast = useToast();
   const navigate = useNavigate();
@@ -142,6 +152,42 @@ const Profile = () => {
       // Don't set error message for posts - we already show error for profile
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFollowers = async () => {
+    try {
+      console.log("Followers clicked - opening modal and fetching data");
+      setLoadingFollowers(true);
+      setFollowers([]); // Reset followers state
+      onFollowersOpen(); // Open modal immediately to show loading state
+      
+      console.log("Fetching followers for:", profileUsername);
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      if (!token) {
+        throw new Error("No auth token available");
+      }
+      
+      const response = await axios.get(`${API_URL}/api/user/${profileUsername}/followers/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log("Followers received:", response.data);
+      setFollowers(response.data);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      
+      toast({
+        title: 'Error',
+        description: 'Failed to load followers: ' + (error.response?.data?.error || error.message),
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingFollowers(false);
     }
   };
 
@@ -372,12 +418,23 @@ const Profile = () => {
                   )}
                 </Flex>
                 
-                <Flex mb={6} gap={8}>
+                <Flex mb={6} gap={8} align="center">
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{posts.length}</Text> Recipes
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold">
-                    <Text as="span" color="#7ac142">{profile.follower_count || 0}</Text> Followers
+                  <Text 
+                    fontSize="lg" 
+                    fontWeight="bold" 
+                    onClick={fetchFollowers}
+                    cursor="pointer"
+                    display="flex"
+                    alignItems="center"
+                    _hover={{ color: "#7ac142" }}
+                    transition="all 0.2s"
+                  >
+                    <Text as="span" color="#7ac142" mr={1}>{profile.follower_count || 0}</Text> 
+                    Followers
+                    <Icon as={FaUserFriends} ml={1} color="#7ac142" />
                   </Text>
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{profile.following_count || 0}</Text> Following
@@ -452,75 +509,51 @@ const Profile = () => {
                 templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }} 
                 gap={6}
               >
-                {posts.map((post) => {
-                  // Parse recipe data from caption if it's JSON formatted
-                  let recipeData;
-                  try {
-                    recipeData = JSON.parse(post.caption);
-                  } catch (e) {
-                    recipeData = { title: post.caption };
-                  }
-
-                  return (
-                    <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
-                      <Box 
-                        position="relative" 
-                        paddingBottom="100%" 
-                        overflow="hidden"
-                        borderRadius="xl"
-                        boxShadow="md"
-                        transition="all 0.2s"
-                        _hover={{
-                          transform: 'translateY(-2px)',
-                          boxShadow: 'lg',
-                        }}
+                {posts.map((post) => (
+                  <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+                    <Box 
+                      position="relative" 
+                      paddingBottom="100%" 
+                      overflow="hidden"
+                      borderRadius="xl"
+                      boxShadow="md"
+                      transition="all 0.2s"
+                      _hover={{
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'lg',
+                      }}
+                    >
+                      <Image 
+                        src={post.image} 
+                        alt={post.caption} 
+                        position="absolute"
+                        top="0"
+                        left="0"
+                        width="100%"
+                        height="100%"
+                        objectFit="cover"
+                      />
+                      <Box
+                        position="absolute"
+                        bottom="0"
+                        left="0"
+                        right="0"
+                        bg="rgba(0,0,0,0.7)"
+                        p={3}
+                        color="white"
                       >
-                        <Image 
-                          src={post.image} 
-                          alt={recipeData.title || 'Recipe'} 
-                          position="absolute"
-                          top="0"
-                          left="0"
-                          width="100%"
-                          height="100%"
-                          objectFit="cover"
-                        />
-                        <Box
-                          position="absolute"
-                          bottom="0"
-                          left="0"
-                          right="0"
-                          bg="rgba(0,0,0,0.7)"
-                          p={3}
-                          color="white"
-                        >
-                          <Text fontWeight="bold" noOfLines={1}>
-                            {recipeData.title || 'Untitled Recipe'}
+                        <Text fontWeight="bold" noOfLines={1}>
+                          {post.recipe_title || post.caption || 'Tasty Recipe'}
+                        </Text>
+                        {post.ingredients && post.ingredients.length > 0 && (
+                          <Text fontSize="sm" noOfLines={1}>
+                            {post.ingredients.length} Ingredients
                           </Text>
-                          {recipeData.ingredients && recipeData.ingredients.length > 0 && (
-                            <Text fontSize="sm" noOfLines={1}>
-                              {recipeData.ingredients.length} Ingredients
-                            </Text>
-                          )}
-                          {isOwnProfile && (
-                            <Button
-                              size="sm"
-                              colorScheme="green"
-                              mt={2}
-                              width="full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/create?edit=${post.id}`);
-                              }}
-                            >
-                              Edit Recipe
-                            </Button>
-                          )}
-                        </Box>
+                        )}
                       </Box>
-                    </GridItem>
-                  );
-                })}
+                    </Box>
+                  </GridItem>
+                ))}
               </Grid>
             ) : (
               <Box textAlign="center" py={10}>
@@ -559,133 +592,69 @@ const Profile = () => {
         </>
       )}
 
-      {/* Recipe Details Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="full" motionPreset="slideInBottom">
-        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
-        <ModalContent maxW="800px" mx="auto" my={8} bg="white" borderRadius="2xl">
-          <ModalCloseButton 
-            size="lg"
+      {/* Followers Modal */}
+      <Modal isOpen={isFollowersOpen} onClose={onFollowersClose} isCentered scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent borderRadius="xl" maxW="400px" mx={4}>
+          <ModalHeader 
+            fontSize="lg" 
+            fontWeight="bold" 
+            textAlign="center"
+            bgGradient="linear(to-r, #7ac142, #68a939)"
             color="white"
-            zIndex="2"
-            top={4}
-            right={4}
-          />
-          <ModalBody p={0}>
-            {selectedPost && (
-              <Box>
-                <Box position="relative">
-                  <Image
-                    src={selectedPost.image}
-                    alt="Recipe"
-                    width="100%"
-                    height="400px"
-                    objectFit="cover"
-                    borderTopRadius="xl"
-                  />
-                  <Box
-                    position="absolute"
-                    bottom={0}
-                    left={0}
-                    right={0}
-                    bg="linear-gradient(transparent, rgba(0,0,0,0.8))"
-                    p={6}
-                    color="white"
-                  >
-                    {(() => {
-                      let recipeData;
-                      try {
-                        recipeData = JSON.parse(selectedPost.caption);
-                      } catch (e) {
-                        recipeData = { title: selectedPost.caption };
-                      }
-                      return (
-                        <Heading size="xl" color="white">
-                          {recipeData.title || 'Untitled Recipe'}
-                        </Heading>
-                      );
-                    })()}
-                  </Box>
-                </Box>
-
-                <Box p={8}>
-                  {(() => {
-                    let recipeData;
-                    try {
-                      recipeData = JSON.parse(selectedPost.caption);
-                    } catch (e) {
-                      recipeData = { title: selectedPost.caption };
-                    }
-                    return (
-                      <VStack align="stretch" spacing={6}>
-                        <Flex justify="flex-end">
-                          {isOwnProfile && (
-                            <Button
-                              leftIcon={<FaEdit />}
-                              colorScheme="green"
-                              size="lg"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/create?edit=${selectedPost.id}`);
-                                onClose();
-                              }}
-                              px={8}
-                              py={6}
-                              borderRadius="xl"
-                              boxShadow="md"
-                              _hover={{
-                                transform: 'translateY(-2px)',
-                                boxShadow: 'lg',
-                              }}
-                            >
-                              Edit Recipe
-                            </Button>
-                          )}
-                        </Flex>
-                        
-                        {recipeData.ingredients && recipeData.ingredients.length > 0 && (
-                          <Box 
-                            bg="gray.50" 
-                            p={6} 
-                            borderRadius="xl"
-                            boxShadow="sm"
-                          >
-                            <Heading size="lg" mb={4} color="#2D3748">Ingredients</Heading>
-                            <VStack align="stretch" spacing={2}>
-                              {recipeData.ingredients.map((ingredient, index) => (
-                                <Text 
-                                  key={index} 
-                                  fontSize="lg"
-                                  color="#4A5568"
-                                >
-                                  • {ingredient.quantity} {ingredient.unit} {ingredient.name}
-                                </Text>
-                              ))}
-                            </VStack>
-                          </Box>
-                        )}
-                        
-                        {recipeData.instructions && (
-                          <Box 
-                            bg="gray.50" 
-                            p={6} 
-                            borderRadius="xl"
-                            boxShadow="sm"
-                          >
-                            <Heading size="lg" mb={4} color="#2D3748">Instructions</Heading>
-                            <Text 
-                              whiteSpace="pre-line" 
-                              fontSize="lg"
-                              color="#4A5568"
-                            >
-                              {recipeData.instructions}
-                            </Text>
-                          </Box>
-                        )}
-                      </VStack>
-                    );
-                  })()}
-                </Box>
-              </Box>
+            borderTopRadius="xl"
+          >
+            <Flex align="center" justify="center">
+              <Icon as={FaUserFriends} mr={2} />
+              <Text>Followers of {profileUsername}</Text>
+            </Flex>
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody pb={6}>
+            {loadingFollowers ? (
+              <Center py={8}>
+                <Spinner size="lg" color="#7ac142" thickness="4px" />
+              </Center>
+            ) : followers.length > 0 ? (
+              <List spacing={3}>
+                {followers.map(follower => (
+                  <ListItem key={follower.username} py={2}>
+                    <Flex align="center" 
+                      onClick={() => {
+                        onFollowersClose();
+                        navigate(`/profile/${follower.username}`);
+                      }} 
+                      cursor="pointer"
+                      p={2}
+                      borderRadius="md"
+                      _hover={{ bg: "gray.50" }}
+                      transition="all 0.2s"
+                    >
+                      <Avatar 
+                        size="md" 
+                        name={follower.username} 
+                        src={follower.profile_image}
+                        mr={3}
+                        bg="#7ac142"
+                        icon={<Icon as={GiCook} color="white" />}
+                      />
+                      <Box>
+                        <Text fontWeight="bold">{follower.username}</Text>
+                        <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                          {follower.bio || "TasteBuds User"}
+                        </Text>
+                      </Box>
+                    </Flex>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Center flexDirection="column" py={8}>
+                <Icon as={FaUserFriends} boxSize="3rem" color="#7ac142" mb={4} />
+                <Text fontWeight="medium" textAlign="center">
+                  {profile?.username} doesn't have any followers yet.
+                </Text>
+              </Center>
             )}
           </ModalBody>
         </ModalContent>
