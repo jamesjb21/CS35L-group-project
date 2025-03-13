@@ -32,7 +32,10 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Center
+  Center,
+  ModalHeader,
+  List,
+  ListItem
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -40,7 +43,7 @@ import { API_URL, ACCESS_TOKEN } from '../constants';
 import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaUserFriends } from 'react-icons/fa';
 import { IoSave } from 'react-icons/io5';
 
 const Profile = () => {
@@ -54,6 +57,13 @@ const Profile = () => {
   const [editedBio, setEditedBio] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const {
+    isOpen: isFollowersOpen,
+    onOpen: onFollowersOpen,
+    onClose: onFollowersClose
+  } = useDisclosure();
   const cancelRef = React.useRef();
   const toast = useToast();
   const navigate = useNavigate();
@@ -142,6 +152,42 @@ const Profile = () => {
       // Don't set error message for posts - we already show error for profile
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFollowers = async () => {
+    try {
+      console.log("Followers clicked - opening modal and fetching data");
+      setLoadingFollowers(true);
+      setFollowers([]); // Reset followers state
+      onFollowersOpen(); // Open modal immediately to show loading state
+      
+      console.log("Fetching followers for:", profileUsername);
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      if (!token) {
+        throw new Error("No auth token available");
+      }
+      
+      const response = await axios.get(`${API_URL}/api/user/${profileUsername}/followers/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log("Followers received:", response.data);
+      setFollowers(response.data);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      
+      toast({
+        title: 'Error',
+        description: 'Failed to load followers: ' + (error.response?.data?.error || error.message),
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingFollowers(false);
     }
   };
 
@@ -372,12 +418,23 @@ const Profile = () => {
                   )}
                 </Flex>
                 
-                <Flex mb={6} gap={8}>
+                <Flex mb={6} gap={8} align="center">
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{posts.length}</Text> Recipes
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold">
-                    <Text as="span" color="#7ac142">{profile.follower_count || 0}</Text> Followers
+                  <Text 
+                    fontSize="lg" 
+                    fontWeight="bold" 
+                    onClick={fetchFollowers}
+                    cursor="pointer"
+                    display="flex"
+                    alignItems="center"
+                    _hover={{ color: "#7ac142" }}
+                    transition="all 0.2s"
+                  >
+                    <Text as="span" color="#7ac142" mr={1}>{profile.follower_count || 0}</Text> 
+                    Followers
+                    <Icon as={FaUserFriends} ml={1} color="#7ac142" />
                   </Text>
                   <Text fontSize="lg" fontWeight="bold">
                     <Text as="span" color="#7ac142">{profile.following_count || 0}</Text> Following
@@ -534,6 +591,88 @@ const Profile = () => {
           </Box>
         </>
       )}
+
+      {/* Followers Modal */}
+      <Modal 
+        isOpen={isFollowersOpen} 
+        onClose={onFollowersClose} 
+        isCentered 
+        scrollBehavior="inside"
+      >
+        <ModalOverlay />
+        <ModalContent 
+          borderRadius="xl" 
+          maxW="400px" 
+          mx="auto"
+          my="auto"
+          position="relative"
+          top="0"
+          boxShadow="xl"
+          bg="white"
+        >
+          <ModalHeader 
+            fontSize="lg" 
+            fontWeight="bold" 
+            textAlign="center"
+            bgGradient="linear(to-r, #7ac142, #68a939)"
+            color="white"
+            borderTopRadius="xl"
+          >
+            <Flex align="center" justify="center">
+              <Icon as={FaUserFriends} mr={2} />
+              <Text>Followers of {profileUsername}</Text>
+            </Flex>
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody pb={6}>
+            {loadingFollowers ? (
+              <Center py={8}>
+                <Spinner size="lg" color="#7ac142" thickness="4px" />
+              </Center>
+            ) : followers.length > 0 ? (
+              <List spacing={3}>
+                {followers.map(follower => (
+                  <ListItem key={follower.username} py={2}>
+                    <Flex align="center" 
+                      onClick={() => {
+                        onFollowersClose();
+                        navigate(`/profile/${follower.username}`);
+                      }} 
+                      cursor="pointer"
+                      p={2}
+                      borderRadius="md"
+                      _hover={{ bg: "gray.50" }}
+                      transition="all 0.2s"
+                    >
+                      <Avatar 
+                        size="md" 
+                        name={follower.username} 
+                        src={follower.profile_image}
+                        mr={3}
+                        bg="#7ac142"
+                        icon={<Icon as={GiCook} color="white" />}
+                      />
+                      <Box>
+                        <Text fontWeight="bold">{follower.username}</Text>
+                        <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                          {follower.bio || "TasteBuds User"}
+                        </Text>
+                      </Box>
+                    </Flex>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Center flexDirection="column" py={8}>
+                <Icon as={FaUserFriends} boxSize="3rem" color="#7ac142" mb={4} />
+                <Text fontWeight="medium" textAlign="center">
+                  {profile?.username} doesn't have any followers yet.
+                </Text>
+              </Center>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

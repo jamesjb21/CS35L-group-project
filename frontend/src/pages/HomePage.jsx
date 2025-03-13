@@ -67,12 +67,23 @@ const HomePage = () => {
           leftIcon={<IoAddCircle size="24px" />}
           borderRadius="xl"
           fontWeight="bold"
-          px={8}
+          px={6}
+          py={4}
+          boxShadow="md"
+          width="auto"
+          minW="fit-content"
           _hover={{
             transform: 'translateY(-2px)',
             boxShadow: 'lg',
+            bg: 'green.500'
+          }}
+          _active={{
+            transform: 'translateY(0)',
+            boxShadow: 'sm'
           }}
           transition="all 0.2s"
+          bg="#7ac142"
+          color="white"
         >
           Add Recipe
         </Button>

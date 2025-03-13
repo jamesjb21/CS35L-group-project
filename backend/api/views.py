@@ -144,6 +144,18 @@ def follow_user(request, username):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_followers(request, username):
+    """Get a list of users who follow the specified user"""
+    try:
+        user = get_object_or_404(MyUser, username=username)
+        followers = user.followers.all()
+        serializer = MyUserProfileSerializer(followers, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
 def explore(request):
     """Get posts for explore page (all recent posts)"""
     try:
