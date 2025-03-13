@@ -1,7 +1,7 @@
 import { Text, Flex, HStack, Image } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
-import { ACCESS_TOKEN } from '../constants';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 
 import { IoPersonOutline } from "react-icons/io5";
 import { IoMdAddCircleOutline } from "react-icons/io";
@@ -52,12 +52,24 @@ const Navbar = () => {
         nav('/profile');
     }
     
-    // Safely handle logout
+    // Enhanced logout functionality 
     const handleLogout = () => {
         try {
             console.log("Logging out user");
-            // Clear token and then navigate
+            // Clear all auth tokens
             localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
+            
+            // Create a custom event to notify other components
+            window.dispatchEvent(new Event('logout'));
+            
+            // Dispatch a storage event to trigger the Layout component listener
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: ACCESS_TOKEN,
+                newValue: null
+            }));
+            
+            // Navigate to login
             nav('/login');
         } catch (e) {
             console.error("Error during logout:", e);
