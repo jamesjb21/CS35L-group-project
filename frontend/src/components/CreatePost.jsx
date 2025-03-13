@@ -73,7 +73,7 @@ const CreatePost = () => {
   };
 
   const addIngredient = () => {
-    // Check if we have a valid ingredient name
+    // Only add the ingredient to the list if there's a name
     if (currentIngredient.trim()) {
       const newIngredient = {
         id: Date.now(),
@@ -93,11 +93,11 @@ const CreatePost = () => {
         }
       }
     } else {
-      // Alert user that ingredient name is required
+      // If empty, just let them know - but don't prevent form submission
       toast({
-        title: "Ingredient name required",
-        description: "Please enter an ingredient name",
-        status: "warning",
+        title: "Empty ingredient",
+        description: "Please enter an ingredient name to add it to the list",
+        status: "info",
         duration: 2000,
         isClosable: true,
       });
@@ -137,7 +137,7 @@ const CreatePost = () => {
     if (ingredients.length === 0) {
       toast({
         title: 'Ingredients required',
-        description: 'Please add at least one ingredient',
+        description: 'Please add at least one ingredient to your recipe',
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -216,6 +216,14 @@ const CreatePost = () => {
     return `${ingredient.quantity} ${ingredient.unit} ${ingredient.name}`;
   };
 
+  // Handle keyboard Enter key to add ingredient
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      addIngredient();
+    }
+  };
+
   return (
     <Container maxW="900px" mx="auto" p={4}>
       {/* NOTE: If there's another "Create New Recipe" title showing on the page,
@@ -250,6 +258,8 @@ const CreatePost = () => {
               onChange={handleImageChange}
               p={2}
               size="lg"
+              border="1px solid"
+              borderColor="gray.300"
             />
             {imagePreview && (
               <Box mt={4} position="relative">
@@ -260,6 +270,8 @@ const CreatePost = () => {
                   width="100%" 
                   objectFit="cover" 
                   borderRadius="md" 
+                  border="1px solid"
+                  borderColor="gray.300"
                 />
               </Box>
             )}
@@ -277,6 +289,8 @@ const CreatePost = () => {
               borderRadius="md"
               boxShadow="sm"
               width="100%"
+              border="1px solid"
+              borderColor="gray.300"
               _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
             />
           </FormControl>
@@ -287,17 +301,22 @@ const CreatePost = () => {
             <FormLabel fontSize="lg" fontWeight="bold">Ingredients</FormLabel>
             
             <VStack spacing={3} align="stretch">
-              <HStack spacing={2} align="flex-end">
+              <HStack spacing={0} align="flex-end">
                 <Input
                   placeholder="Enter an ingredient..."
                   value={currentIngredient}
                   onChange={(e) => setCurrentIngredient(e.target.value)}
-                  flex="2"
+                  onKeyDown={handleKeyDown}
+                  width="45%"
                   size="lg"
+                  height="60px"
                   fontSize="lg"
                   p={5}
+                  mr={1}
                   borderRadius="md"
                   boxShadow="sm"
+                  border="1px solid"
+                  borderColor="gray.300"
                   _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
                 />
                 
@@ -308,53 +327,68 @@ const CreatePost = () => {
                     step={0.5} 
                     value={currentQuantity}
                     onChange={(valueString) => setCurrentQuantity(valueString)}
-                    flex="1"
+                    width="15%"
                     size="lg"
+                    mr={1}
                   >
                     <NumberInputField 
                       p={5}
+                      height="60px"
                       borderRadius="md"
                       boxShadow="sm"
+                      border="1px solid"
+                      borderColor="gray.300"
                       _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
                     />
                   </NumberInput>
                 )}
                 
                 {!isCustomUnit ? (
-                  <Select 
-                    value={currentUnit} 
-                    onChange={handleUnitChange}
-                    flex="1"
-                    size="lg"
-                    p={2}
-                    height="60px"
-                    borderRadius="md"
-                    boxShadow="sm"
-                    css={{
-                      // This completely removes the native arrow icon
-                      WebkitAppearance: "none",
-                      MozAppearance: "none",
-                      appearance: "none",
-                      backgroundImage: "none"
-                    }}
-                    _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
-                  >
-                    {unitOptions.map(unit => (
-                      <option key={unit} value={unit}>
-                        {unit === 'none' ? 'No Unit' : unit}
-                      </option>
-                    ))}
-                  </Select>
+                  <Box position="relative" width="35%">
+                    <Select 
+                      value={currentUnit} 
+                      onChange={handleUnitChange}
+                      size="lg"
+                      height="60px"
+                      width="100%"
+                      textIndent="1.25rem"
+                      paddingRight="2rem"
+                      paddingLeft="0"
+                      borderRadius="md"
+                      border="1px solid"
+                      borderColor="gray.300"
+                      boxShadow="sm"
+                      _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
+                      sx={{
+                        "-webkit-appearance": "none",
+                        "-moz-appearance": "none",
+                        "&::-ms-expand": { display: "none" },
+                        width: "100%",
+                        maxWidth: "100%"
+                      }}
+                    >
+                      {unitOptions.map(unit => (
+                        <option key={unit} value={unit}>
+                          {unit === 'none' ? 'No Unit' : unit}
+                        </option>
+                      ))}
+                    </Select>
+                  </Box>
                 ) : (
-                  <Flex flex="1">
+                  <Flex width="35%" direction="row">
                     <Input
                       placeholder="Custom unit"
                       value={customUnit}
                       onChange={(e) => setCustomUnit(e.target.value)}
                       borderRightRadius="0"
+                      width="75%"
                       size="lg"
-                      p={5}
+                      textIndent="1.25rem"
+                      paddingLeft="0"
+                      height="60px"
                       boxShadow="sm"
+                      border="1px solid"
+                      borderColor="gray.300"
                       _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
                     />
                     <IconButton
@@ -365,6 +399,7 @@ const CreatePost = () => {
                       borderLeftRadius="0"
                       title="Switch back to standard units"
                       height="60px"
+                      width="25%"
                     />
                   </Flex>
                 )}
@@ -376,7 +411,8 @@ const CreatePost = () => {
                   aria-label="Add ingredient"
                   size="lg"
                   height="60px"
-                  width="60px"
+                  width="5%"
+                  minWidth="40px"
                 />
               </HStack>
               
@@ -397,6 +433,8 @@ const CreatePost = () => {
                       borderRadius="md" 
                       align="center"
                       justify="space-between"
+                      border="1px solid"
+                      borderColor="gray.200"
                     >
                       <Text>
                         {formatIngredient(ingredient)}
@@ -434,6 +472,8 @@ const CreatePost = () => {
               borderRadius="md"
               boxShadow="sm"
               width="100%"
+              border="1px solid"
+              borderColor="gray.300"
               _focus={{ borderColor: "blue.500", boxShadow: "outline" }}
             />
           </FormControl>
