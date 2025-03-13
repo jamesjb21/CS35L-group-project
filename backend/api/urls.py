@@ -11,6 +11,7 @@ from api.views import (
     explore,
     search_users,
     get_user_followers,
+    search_recipes,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -31,6 +32,7 @@ urlpatterns = [
     path('feed/', get_feed, name="feed"),
     path('explore/', explore, name="explore"),
     path('posts/create/', create_post, name="create_post"),
+    path('recipes/search/', search_recipes, name="search_recipes"),
     
     # Post interactions
     path('posts/<int:post_id>/like/', like_post, name="like_post"),
