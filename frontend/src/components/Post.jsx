@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Image, Text, Flex, IconButton, Avatar, Input, Button, VStack, UnorderedList, ListItem, Heading, Divider } from '@chakra-ui/react';
+import { Box, Image, Text, Flex, IconButton, Avatar, Input, Button, VStack, UnorderedList, ListItem, Heading, Divider, HStack } from '@chakra-ui/react';
 import { FaHeart, FaRegHeart, FaComment } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../constants';
 
@@ -26,7 +27,9 @@ const Post = ({ post, refreshPosts }) => {
   const recipeData = parseRecipeData();
   const isStructuredRecipe = recipeData.ingredients && recipeData.ingredients.length > 0;
   
-  const handleLike = async () => {
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
@@ -66,61 +69,125 @@ const Post = ({ post, refreshPosts }) => {
     }
   };
 
+  const handleCommentClick = (e) => {
+    e.preventDefault();
+    setShowComments(!showComments);
+  };
+
   return (
-    <Box borderWidth="1px" borderRadius="lg" overflow="hidden" mb={4} bg="white">
+    <Box as="div" borderWidth="1px" borderRadius="xl" overflow="hidden" mb={4} bg="white" boxShadow="md">
       {/* Post Header */}
-      <Flex p={4} align="center">
-        <Avatar size="sm" mr={2} />
-        <Text fontWeight="bold">{post.username}</Text>
+      <Flex p={4} align="center" borderBottom="1px" borderColor="gray.100">
+        <Link to={`/profile/${post.username}`}>
+          <Avatar size="sm" mr={3} name={post.username} />
+        </Link>
+        <Link to={`/profile/${post.username}`}>
+          <Text fontWeight="bold" fontSize="md" _hover={{ color: 'green.500' }}>{post.username}</Text>
+        </Link>
       </Flex>
       
       {/* Post Image */}
-      <Image src={post.image} alt="Recipe" objectFit="cover" width="100%" />
-      
-      {/* Post Actions */}
-      <Flex p={4} align="center">
-        <IconButton
-          aria-label="Like"
-          icon={post.liked_by_user ? <FaHeart color="red" /> : <FaRegHeart />}
-          variant="ghost"
-          onClick={handleLike}
-          mr={2}
+      <Box position="relative" paddingBottom="56.25%" maxHeight="600px">
+        <Image 
+          src={post.image} 
+          alt="Recipe" 
+          position="absolute"
+          top="0"
+          left="0"
+          width="100%"
+          height="100%"
+          objectFit="contain"
+          bg="gray.50"
         />
-        <IconButton
-          aria-label="Comment"
-          icon={<FaComment />}
-          variant="ghost"
-          onClick={() => setShowComments(!showComments)}
-        />
-      </Flex>
-      
-      {/* Likes Count */}
-      <Box px={4} pb={2}>
-        <Text fontWeight="bold">{post.likes_count} likes</Text>
       </Box>
       
-      {/* Recipe Content */}
-      <Box px={4} pb={4}>
+      {/* Post Actions and Content */}
+      <Box p={4}>
+        {/* Action Buttons */}
+        <HStack spacing={4} mb={3}>
+          <IconButton
+            aria-label="Like"
+            icon={post.liked_by_user ? <FaHeart color="red" /> : <FaRegHeart />}
+            variant="ghost"
+            onClick={handleLike}
+            size="lg"
+            colorScheme="red"
+            _hover={{ bg: 'red.50' }}
+            type="button"
+            form="no-form"
+            as="button"
+          />
+          <IconButton
+            aria-label="Comment"
+            icon={<FaComment />}
+            variant="ghost"
+            onClick={handleCommentClick}
+            size="lg"
+            colorScheme="blue"
+            _hover={{ bg: 'blue.50' }}
+            type="button"
+            form="no-form"
+            as="button"
+          />
+        </HStack>
+        
+        {/* Likes Count */}
+        <Text fontWeight="bold" mb={3}>{post.likes_count} likes</Text>
+        
+        {/* Recipe Content */}
         {isStructuredRecipe ? (
           <VStack align="stretch" spacing={3}>
-            <Heading size="md">{recipeData.title || "Untitled Recipe"}</Heading>
+            <Heading size="md" color="#2D3748" fontWeight="bold" fontSize="2xl">{recipeData.title || "Untitled Recipe"}</Heading>
             
             <Button 
-              size="sm" 
-              colorScheme="blue" 
+              size="md" 
+              colorScheme="green" 
               variant="outline"
               onClick={() => setShowFullRecipe(!showFullRecipe)}
+              borderRadius="xl"
+              width="full"
+              py={2}
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+                bg: "green.50",
+                borderColor: "green.400",
+                color: "green.600"
+              }}
+              _active={{
+                transform: "translateY(0)",
+                boxShadow: "md"
+              }}
+              transition="all 0.2s"
+              borderWidth="2px"
+              fontWeight="semibold"
+              letterSpacing="wide"
+              textTransform="uppercase"
+              fontSize="sm"
+              type="button"
+              form="no-form"
+              as="button"
             >
-              {showFullRecipe ? "Hide Recipe Details" : "View Recipe Details"}
+              {showFullRecipe ? (
+                <HStack spacing={2}>
+                  <Text>Hide Recipe Details</Text>
+                  <Text as="span" fontSize="xs">▼</Text>
+                </HStack>
+              ) : (
+                <HStack spacing={2}>
+                  <Text>View Recipe Details</Text>
+                  <Text as="span" fontSize="xs">▶</Text>
+                </HStack>
+              )}
             </Button>
             
             {showFullRecipe && (
               <>
                 <Box>
-                  <Heading size="sm" mb={2}>Ingredients:</Heading>
+                  <Heading size="sm" mb={2} color="#2D3748">Ingredients:</Heading>
                   <UnorderedList spacing={1}>
                     {recipeData.ingredients.map((ingredient, index) => (
-                      <ListItem key={index}>
+                      <ListItem key={index} color="#4A5568">
                         {ingredient.quantity} {ingredient.unit} {ingredient.name}
                       </ListItem>
                     ))}
@@ -130,33 +197,37 @@ const Post = ({ post, refreshPosts }) => {
                 <Divider />
                 
                 <Box>
-                  <Heading size="sm" mb={2}>Instructions:</Heading>
-                  <Text whiteSpace="pre-line">{recipeData.instructions}</Text>
+                  <Heading size="sm" mb={2} color="#2D3748">Instructions:</Heading>
+                  <Text whiteSpace="pre-line" color="#4A5568">{recipeData.instructions}</Text>
                 </Box>
               </>
             )}
           </VStack>
         ) : (
-          <Text>
-            <Text as="span" fontWeight="bold" mr={2}>
-              {post.username}
-            </Text>
+          <Text color="#4A5568">
+            <Link to={`/profile/${post.username}`}>
+              <Text as="span" fontWeight="bold" mr={2} _hover={{ color: 'green.500' }}>
+                {post.username}
+              </Text>
+            </Link>
             {post.caption}
           </Text>
         )}
       </Box>
       
-      {/* Comments */}
+      {/* Comments Section */}
       {showComments && (
-        <Box px={4} pb={2}>
-          <Text color="gray.500" mb={2}>
-            View all {post.comments_count} comments
+        <Box px={4} pb={2} bg="gray.50">
+          <Text color="gray.500" mb={2} fontWeight="medium">
+            View {post.comments_count} comments
           </Text>
           {post.comments.map((comment) => (
-            <Text key={comment.id} mb={1}>
-              <Text as="span" fontWeight="bold" mr={2}>
-                {comment.username}
-              </Text>
+            <Text key={comment.id} mb={1} color="#4A5568">
+              <Link to={`/profile/${comment.username}`}>
+                <Text as="span" fontWeight="bold" mr={2} _hover={{ color: 'green.500' }}>
+                  {comment.username}
+                </Text>
+              </Link>
               {comment.text}
             </Text>
           ))}
@@ -164,18 +235,27 @@ const Post = ({ post, refreshPosts }) => {
       )}
       
       {/* Add Comment */}
-      <Flex as="form" onSubmit={handleComment} p={4} borderTop="1px" borderColor="gray.200">
-        <Input
-          placeholder="Add a comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          variant="unstyled"
-          mr={2}
-        />
-        <Button type="submit" size="sm" colorScheme="blue" isDisabled={!comment.trim()}>
-          Post
-        </Button>
-      </Flex>
+      <Box as="form" onSubmit={handleComment} p={4} borderTop="1px" borderColor="gray.100">
+        <Flex>
+          <Input
+            placeholder="Add a comment..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            variant="unstyled"
+            mr={2}
+            color="#4A5568"
+          />
+          <Button 
+            type="submit" 
+            size="sm" 
+            colorScheme="green" 
+            isDisabled={!comment.trim()}
+            borderRadius="xl"
+          >
+            Post
+          </Button>
+        </Flex>
+      </Box>
     </Box>
   );
 };
