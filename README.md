@@ -2,7 +2,7 @@
 
 TasteBuds is a social media platform for food enthusiasts to share, discover, and interact with recipes. Users can post recipes, like and comment on posts, and search for recipes or users.
 
-## Features
+## ✨ Features
 - **Dynamic Feed**: View posts from users you follow.
 - **Recipe Upload**: Upload recipes with images, descriptions, and ingredients.
 - **Search**: Search for recipes or users.
@@ -15,7 +15,41 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 - **Database**: PostgreSQL or MongoDB
 - **Version Control**: Git, GitHub
 
-## Setup Instructions
+## 📱 App Screenshots
+
+Here's a visual tour of our application:
+
+### Start Page
+![Start Page](public/home-feed.png)
+*The home feed displays recipes from users you follow, with options to like, comment, and save.*
+
+### Authentication
+![Signup Page](public/signup-feed.png)
+
+![Login Page](public/login-page.png)
+*Secure authentication with a clean, user-friendly interface.*
+
+### Home Feed
+![Home Feed](public/home-feed.png)
+*The home feed displays recipes from users you follow, with options to like, comment, and save.*
+
+### User Profile
+![Profile Page](public/profile-page.png)
+*User profiles showcase a user's posted recipes, bio, and followers/following counts.*
+
+### Recipe Creation
+![Create Recipe](public/create-recipe.png)
+*The recipe creation page allows users to upload images, ingredients, and step-by-step instructions.*
+
+### Search & Discovery
+![Search Page](public/search-page.png)
+*Search for recipes or users with our powerful search and filtering capabilities.*
+
+### Explore
+![Explore Page](public/explore-page.png)
+*Discover trending and popular recipes from around the community.*
+
+## 🚀 Setup Instructions
 
 ### Prerequisites
 - Node.js (v16 or higher)
@@ -39,7 +73,7 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 
    deactivate *deactivate environment
    
-3. Install backend packages
+3. Install backend packages:
 
    ```bash
    cd backend
@@ -48,13 +82,12 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 4. Start the backend server:
 
    ```bash
-   cd ../backend
    python manage.py makemigrations
    python manage.py migrate
    python manage.py runserver
    ```
 
-5. Install frontend packages 
+5. Install frontend packages:
 
    ```bash
    cd ../frontend
@@ -64,6 +97,5 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 6. Start the frontend:
 
    ```bash
-   cd ../frontend
    npm run dev
    ```
