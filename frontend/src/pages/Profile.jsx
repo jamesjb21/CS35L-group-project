@@ -593,9 +593,23 @@ const Profile = () => {
       )}
 
       {/* Followers Modal */}
-      <Modal isOpen={isFollowersOpen} onClose={onFollowersClose} isCentered scrollBehavior="inside">
+      <Modal 
+        isOpen={isFollowersOpen} 
+        onClose={onFollowersClose} 
+        isCentered 
+        scrollBehavior="inside"
+      >
         <ModalOverlay />
-        <ModalContent borderRadius="xl" maxW="400px" mx={4}>
+        <ModalContent 
+          borderRadius="xl" 
+          maxW="400px" 
+          mx="auto"
+          my="auto"
+          position="relative"
+          top="0"
+          boxShadow="xl"
+          bg="white"
+        >
           <ModalHeader 
             fontSize="lg" 
             fontWeight="bold" 
