@@ -119,26 +119,29 @@ function Search() {
         Find Users & Recipes
       </Heading>
       
-      <Center mb={8}>
-        <InputGroup size="lg" maxW="600px" width="80vw">
-          <InputLeftElement pointerEvents="none" color="gray.400" height="100%">
-            <IoSearch size={24} />
-          </InputLeftElement>
-          <Input 
-            placeholder="Search for users or recipes..." 
-            value={searchTerm} 
-            onChange={handleInputChange}
-            pl="50px"
-            py={4}
-            size="lg"
-            fontSize="lg"
-            borderRadius="md"
-            boxShadow="md"
-            border="2px solid"
-            borderColor="green.400"
-            _focus={{ boxShadow: "0 0 0 2px #7ac142" }}
-          />
-        </InputGroup>
+      <Center mb={8} width="100%">
+        <Box width="100%" maxW="1100px">
+          <InputGroup size="lg" width="100%">
+            <InputLeftElement pointerEvents="none" color="gray.400" height="100%">
+              <IoSearch size={24} />
+            </InputLeftElement>
+            <Input 
+              placeholder="Search for users or recipes..." 
+              value={searchTerm} 
+              onChange={handleInputChange}
+              pl="50px"
+              py={4}
+              size="lg"
+              fontSize="lg"
+              borderRadius="md"
+              boxShadow="md"
+              border="2px solid"
+              borderColor="green.400"
+              _focus={{ boxShadow: "0 0 0 2px #7ac142" }}
+              width="100%"
+            />
+          </InputGroup>
+        </Box>
       </Center>
       
       {loading ? (
