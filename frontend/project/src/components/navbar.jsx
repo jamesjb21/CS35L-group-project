@@ -1,4 +1,4 @@
-import { Text, Flex, HStack, Image } from "@chakra-ui/react";
+import { Text, Flex, HStack, Image, Box, Tooltip } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
@@ -10,6 +10,7 @@ import { IoSearch } from "react-icons/io5";
 import { IoIosLogOut } from "react-icons/io";
 import { MdExplore } from "react-icons/md";
 import { GiCook } from "react-icons/gi";
+import { FaUtensils } from "react-icons/fa";
 
 const Navbar = () => {
     const nav = useNavigate();
