@@ -9,10 +9,11 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 - **Authentication**: Secure login and signup.
 - **Filters**: Sort recipes by cuisine type or dietary preferences.
 
-## Technologies
-- **Frontend**: React, Node.js
-- **Backend**: Python (Django)
-- **Database**: PostgreSQL or MongoDB
+## 🛠️ Technologies
+- **Frontend**: React, Vite, Chakra UI
+- **Backend**: Python (Django), Django REST Framework
+- **Database**: SQLite (development), PostgreSQL (production)
+- **Authentication**: JWT (JSON Web Tokens)
 - **Version Control**: Git, GitHub
 
 ## 📱 App Screenshots
@@ -20,33 +21,53 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 Here's a visual tour of our application:
 
 ### Start Page
-![Start Page](frontend/public/start-page.png)
-*The home feed displays recipes from users you follow, with options to like, comment, and save.*
+<div>
+  <img src="frontend/public/start-page.png" alt="Start Page" width="49%">
+</div>
+
+*The welcome page introduces users to TasteBuds with a clean, inviting interface.*
 
 ### Authentication
-![Signup Page](frontend/public/signup-feed.png)
+<div>
+  <img src="frontend/public/signup-page.png" alt="Signup Page" width="49%">
+  <img src="frontend/public/login-page.png" alt="Login Page" width="49%">
+</div>
 
-![Login Page](frontend/public/login-page.png)
-*Secure authentication with a clean, user-friendly interface.*
+*Secure authentication with a clean, user-friendly interface and detailed error handling.*
 
 ### Home Feed
-![Home Feed](frontend/public/home-feed.png)
+<div>
+  <img src="frontend/public/home-page.png" alt="Home Page" width="49%">
+</div>
+
 *The home feed displays recipes from users you follow, with options to like, comment, and save.*
 
 ### User Profile
-![Profile Page](frontend/public/profile-page.png)
+<div>
+  <img src="frontend/public/profile-page.png" alt="Profile Page" width="49%">
+</div>
+
 *User profiles showcase a user's posted recipes, bio, and followers/following counts.*
 
 ### Recipe Creation
-![Create Recipe](frontend/public/create-recipe.png)
+<div>
+  <img src="frontend/public/recipe-page.png" alt="Recipe Page" width="49%">
+</div>
+
 *The recipe creation page allows users to upload images, ingredients, and step-by-step instructions.*
 
 ### Search & Discovery
-![Search Page](frontend/public/search-page.png)
+!<div>
+  <img src="frontend/public/search-page.png" alt="Search Page" width="49%">
+</div>
+
 *Search for recipes or users with our powerful search and filtering capabilities.*
 
 ### Explore
-![Explore Page](frontend/public/explore-page.png)
+<div>
+  <img src="frontend/public/explore-page.png" alt="Explore Page" width="49%">
+</div>
+
 *Discover trending and popular recipes from around the community.*
 
 ## 🚀 Setup Instructions
