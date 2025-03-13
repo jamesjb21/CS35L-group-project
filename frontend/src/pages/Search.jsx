@@ -59,20 +59,23 @@ function Search() {
     <Box maxW="600px" mx="auto" py={6} px={4}>
       <Heading size="lg" mb={6}>Search Users</Heading>
       
-      <InputGroup mb={6}>
-        <InputLeftElement pointerEvents="none">
-          <IoSearch color="gray.300" />
-        </InputLeftElement>
-        <Input 
-          placeholder="Search for users by username" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-        />
+      <Flex mb={6}>
+        <InputGroup>
+          <InputLeftElement pointerEvents="none" color="gray.400">
+            <IoSearch />
+          </InputLeftElement>
+          <Input 
+            placeholder="Search for users by username" 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            pl="40px"
+          />
+        </InputGroup>
         <Button ml={2} colorScheme="blue" onClick={handleSearch} isLoading={loading}>
           Search
         </Button>
-      </InputGroup>
+      </Flex>
       
       {loading ? (
         <Flex justify="center" my={10}>
