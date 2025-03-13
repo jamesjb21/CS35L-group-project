@@ -8,11 +8,6 @@
 
 FROM python:3.9-slim
 
-# Prevents Python from writing pyc files to disc and enables stdout/stderr logging
-# Aka: Don't remove this shit
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
 # Set the working directory for the container (So the directory for our backend will pretty much be set at /app)
 WORKDIR /app
 
