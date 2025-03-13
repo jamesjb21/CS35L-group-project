@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9,7 +9,8 @@ from .serializers import (
     PostSerializer,
     PostCreateSerializer,
     CommentSerializer,
-    LikeSerializer
+    LikeSerializer,
+    UserSerializer
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -18,8 +19,8 @@ import json
 
 # Create your views here.
 class CreateUserView(generics.CreateAPIView):
-    queryset = MyUser.objects.all
-    serializer_class = UserRegisterSerializer
+    queryset = User.objects.all
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
 @api_view(['GET'])
