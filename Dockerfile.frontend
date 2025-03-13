@@ -1,0 +1,28 @@
+#
+#       DOCKER FILE
+#       FRONT END
+#
+#       Author: Shawn Kim
+#       Last modified: 3/12/25
+#
+
+FROM node:16
+
+# Set the working directory in the container, basically the same as the back end
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY frontend/package.json frontend/package-lock.json* /app/
+RUN npm install
+
+# Copy the frontend code into the container
+COPY frontend/ /app/
+
+# Build the frontend for production
+RUN npm run build
+
+# Front end will run on port 3000
+EXPOSE 3000
+
+# Serve the built files using a static file server (install "serve" if necessary)
+CMD ["npx", "serve", "dist"]
