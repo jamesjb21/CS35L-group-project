@@ -1,0 +1,27 @@
+/* HomePage.css */
+/* Styles for the Home Page */
+
+.home-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.home-title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #333;
+}
+
+.home-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+} 

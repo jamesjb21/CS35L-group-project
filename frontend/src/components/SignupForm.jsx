@@ -119,7 +119,7 @@ const SignUpForm = ({ route, method }) => {
 
           <div className="signup-form-container">
             <div className="form-wrapper">
-              <h1 className="signup-title">Create your free account now!</h1>
+              <h2 className="signup-title">Create your free account now!</h2>
               
               {/* General error message */}
               {errorMessage && (
