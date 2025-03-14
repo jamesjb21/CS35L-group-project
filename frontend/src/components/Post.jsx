@@ -3,10 +3,12 @@ import { Box, Image, Text, Flex, IconButton, Avatar, Input, Button, VStack, Unor
 import { FaHeart, FaRegHeart, FaComment } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_URL } from '../constants';
+import { API_URL, ACCESS_TOKEN } from '../constants';
 import { jwtDecode } from 'jwt-decode';
+import DeletePostButton from './DeletePostButton';
+import { isPostOwner } from '../utils/postUtils';
 
-const Post = ({ post, refreshPosts }) => {
+const Post = ({ post, refreshPosts, onDelete }) => {
   const [comment, setComment] = useState('');
   const [showAllComments, setShowAllComments] = useState(false);
   const [showFullRecipe, setShowFullRecipe] = useState(false);
@@ -15,46 +17,64 @@ const Post = ({ post, refreshPosts }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [commentsCount, setCommentsCount] = useState(post.comments_count || 0);
   const [currentUsername, setCurrentUsername] = useState('');
+  const [isOwner, setIsOwner] = useState(false);
   
   // Number of preview comments to show
   const PREVIEW_COMMENTS_COUNT = 3;
   
-  // Get the current user's username from token on component mount
+  // Get current user info from token in a more robust way
   useEffect(() => {
-    const fetchCurrentUsername = () => {
+    const fetchCurrentUser = () => {
       try {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem(ACCESS_TOKEN);
         if (token) {
-          // Try to decode the token to get the username
           const decoded = jwtDecode(token);
+          console.log('Token decoded:', decoded);
+          
+          // Get username/user_id from token, trying different possible fields
+          let userId = null;
+          
+          // Try all possible fields where user info might be stored
           if (decoded.username) {
-            setCurrentUsername(decoded.username);
-            localStorage.setItem('username', decoded.username);
-            return;
+            userId = decoded.username;
+          } else if (decoded.user_id) {
+            userId = decoded.user_id;
+          } else if (decoded.sub) {
+            userId = decoded.sub;
+          } else if (decoded.id) {
+            userId = decoded.id;
           }
           
-          // If username not in token, fetch from API
-          axios.get(`${API_URL}/api/user/current/`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-          .then(response => {
-            const username = response.data.username;
-            setCurrentUsername(username);
-            localStorage.setItem('username', username);
-          })
-          .catch(error => {
-            console.error('Error fetching current user:', error);
-          });
+          console.log('Current user ID extracted from token:', userId);
+          setCurrentUsername(userId);
+        } else {
+          console.log('No access token found');
+          setCurrentUsername(null);
         }
       } catch (error) {
-        console.error('Error getting current username:', error);
+        console.error('Error getting current user:', error);
+        setCurrentUsername(null);
       }
     };
     
-    fetchCurrentUsername();
+    fetchCurrentUser();
   }, []);
+  
+  // Update the ownership check effect
+  useEffect(() => {
+    // Check if the current user is the post owner whenever currentUsername changes
+    if (currentUsername && post) {
+      // Use the utility function for checking ownership
+      const userIsPostOwner = isPostOwner(post, currentUsername);
+      console.log(`Post ownership result: ${userIsPostOwner ? 'Yes' : 'No'}`, { 
+        postId: post.id,
+        currentUsername 
+      });
+      setIsOwner(userIsPostOwner);
+    } else {
+      setIsOwner(false);
+    }
+  }, [currentUsername, post]);
   
   // Get the comments to display based on whether showing all or just preview
   const commentsToDisplay = showAllComments ? comments : comments.slice(-PREVIEW_COMMENTS_COUNT);
@@ -170,17 +190,19 @@ const Post = ({ post, refreshPosts }) => {
   return (
     <Box as="div" borderWidth="1px" borderRadius="xl" overflow="hidden" mb={4} bg="white" boxShadow="md">
       {/* Post Header */}
-      <Flex p={4} align="center" borderBottom="1px" borderColor="gray.100">
-        <Link to={`/profile/${post.username}`}>
-          <Avatar size="sm" mr={3} name={post.username} />
-        </Link>
-        <Link to={`/profile/${post.username}`}>
-          <Text fontWeight="bold" fontSize="md" _hover={{ color: 'green.500' }}>{post.username}</Text>
-        </Link>
+      <Flex p={4} align="center" justify="space-between" borderBottom="1px" borderColor="gray.100" width="100%">
+        <Flex align="center">
+          <Link to={`/profile/${post.username}`} onClick={(e) => e.stopPropagation()}>
+            <Avatar size="sm" mr={3} name={post.username} />
+          </Link>
+          <Link to={`/profile/${post.username}`} onClick={(e) => e.stopPropagation()}>
+            <Text fontWeight="bold" fontSize="md" _hover={{ color: 'green.500' }}>{post.username}</Text>
+          </Link>
+        </Flex>
       </Flex>
       
       {/* Post Image */}
-      <Box position="relative" paddingBottom="56.25%" maxHeight="600px">
+      <Box position="relative" paddingBottom="56.25%" maxHeight="600px" onClick={(e) => e.stopPropagation()}>
         <Image 
           src={post.image} 
           alt="Recipe" 
@@ -197,51 +219,64 @@ const Post = ({ post, refreshPosts }) => {
       {/* Post Actions and Content */}
       <Box p={4}>
         {/* Action Buttons */}
-        <HStack spacing={4} mb={3}>
-          <IconButton
-            aria-label="Like"
-            icon={isLiked ? <FaHeart color="red" /> : <FaRegHeart />}
-            variant="ghost"
-            onClick={handleLike}
-            size="xl" 
-            fontSize="24px"
-            colorScheme="red"
-            _hover={{ bg: 'red.50' }}
-            type="button"
-            form="no-form"
-            as="button"
-            h="50px"
-            w="50px"
-          />
-          <Flex align="center">
+        <HStack spacing={4} mb={3} justify="space-between" width="100%">
+          <HStack spacing={4}>
             <IconButton
-              aria-label="Comment"
-              icon={<FaComment />}
+              aria-label="Like"
+              icon={isLiked ? <FaHeart color="red" /> : <FaRegHeart />}
               variant="ghost"
-              onClick={handleCommentClick}
-              size="xl"
-              fontSize="22px"
-              colorScheme="blue"
-              _hover={{ bg: 'blue.50' }}
+              onClick={handleLike}
+              size="xl" 
+              fontSize="24px"
+              colorScheme="red"
+              _hover={{ bg: 'red.50' }}
               type="button"
               form="no-form"
               as="button"
               h="50px"
               w="50px"
             />
-            {/* Show comment count even when zero */}
-            <Text 
-              color="gray.500" 
-              fontWeight="medium" 
-              ml={1} 
-              fontSize="md"
-              cursor="pointer"
-              onClick={handleCommentClick}
-              _hover={{ color: "blue.500" }}
-            >
-              {commentsCount}
-            </Text>
-          </Flex>
+            <Flex align="center">
+              <IconButton
+                aria-label="Comment"
+                icon={<FaComment />}
+                variant="ghost"
+                onClick={handleCommentClick}
+                size="xl"
+                fontSize="22px"
+                colorScheme="blue"
+                _hover={{ bg: 'blue.50' }}
+                type="button"
+                form="no-form"
+                as="button"
+                h="50px"
+                w="50px"
+              />
+              {/* Show comment count even when zero */}
+              <Text 
+                color="gray.500" 
+                fontWeight="medium" 
+                ml={1} 
+                fontSize="md"
+                cursor="pointer"
+                onClick={handleCommentClick}
+                _hover={{ color: "blue.500" }}
+              >
+                {commentsCount}
+              </Text>
+            </Flex>
+          </HStack>
+          
+          {/* Delete button aligned with action buttons */}
+          {isOwner && currentUsername && (
+            <Box>
+              <DeletePostButton 
+                postId={post.id} 
+                isOwner={isOwner} 
+                onDelete={onDelete || refreshPosts} 
+              />
+            </Box>
+          )}
         </HStack>
         
         {/* Likes Count */}

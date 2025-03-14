@@ -23,6 +23,7 @@ import axios from 'axios';
 import { API_URL } from '../constants';
 import Post from '../components/Post';
 import { GiCook } from 'react-icons/gi';
+import { deletePost, getHiddenPosts } from '../utils/postUtils';
 
 const Explore = () => {
   const [posts, setPosts] = useState([]);
@@ -45,6 +46,24 @@ const Explore = () => {
     }
   };
 
+  // Update the filterHiddenPosts function to use getHiddenPosts
+  const filterHiddenPosts = (postsArray) => {
+    try {
+      // Get hidden posts using the utility function
+      const hiddenPosts = getHiddenPosts();
+      
+      if (hiddenPosts.length === 0) {
+        return postsArray; // No filtering needed
+      }
+      
+      // Filter out hidden posts
+      return postsArray.filter(post => !hiddenPosts.includes(post.id));
+    } catch (error) {
+      console.error('Error filtering hidden posts:', error);
+      return postsArray; // Return original array if there's an error
+    }
+  };
+
   const fetchExplorePosts = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -53,7 +72,10 @@ const Explore = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPosts(response.data);
+      
+      // Filter out any posts that were previously "deleted" by the user
+      const filteredPosts = filterHiddenPosts(response.data);
+      setPosts(filteredPosts);
     } catch (error) {
       console.error('Error fetching explore recipes:', error);
     } finally {
@@ -64,6 +86,20 @@ const Explore = () => {
   const openPostModal = (post) => {
     setSelectedPost(post);
     onOpen();
+  };
+
+  const handleHidePost = (postId) => {
+    console.log(`Hiding post ID ${postId} from Explore page UI`);
+    
+    // Remove the post from the local state to update the UI
+    setPosts(prevPosts => {
+      const newPosts = prevPosts.filter(post => post.id !== postId);
+      console.log(`Explore: Hidden post. Posts count before: ${prevPosts.length}, after: ${newPosts.length}`);
+      return newPosts;
+    });
+    
+    // Close the modal after removing the post
+    onClose();
   };
 
   useEffect(() => {
@@ -163,18 +199,30 @@ const Explore = () => {
       )}
       
       {/* Recipe Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-        <ModalOverlay bg="blackAlpha.700" />
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size="2xl" 
+        isCentered
+        blockScrollOnMount={false}
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay 
+          bg="blackAlpha.700" 
+          backdropFilter="blur(5px)"
+        />
         <ModalContent 
           bg="white"
           borderRadius="xl"
           overflow="hidden"
           boxShadow="2xl"
           maxW="800px"
-          mx="auto"
+          mx={{ base: "4", md: "auto" }}
           my="auto"
           position="relative"
-          top="0"
+          top={{ base: "10%", md: "0" }}
+          transform="translate(0, 0)"
+          onClick={(e) => e.stopPropagation()}
         >
           <ModalCloseButton 
             size="lg"
@@ -183,11 +231,17 @@ const Explore = () => {
             position="absolute"
             right={4}
             top={4}
-            zIndex={2}
+            zIndex={100}
           />
-          <ModalBody p={0}>
+          <ModalBody p={0} position="relative">
             {selectedPost && (
-              <Post post={selectedPost} refreshPosts={fetchExplorePosts} />
+              <Post 
+                post={selectedPost} 
+                refreshPosts={fetchExplorePosts}
+                onDelete={(postId) => {
+                  handleHidePost(postId);
+                }}
+              />
             )}
           </ModalBody>
         </ModalContent>

@@ -6,11 +6,30 @@ import Post from '../components/Post';
 import { Link } from 'react-router-dom';
 import { GiCook } from "react-icons/gi";
 import { IoAddCircle } from "react-icons/io5";
+import { getHiddenPosts } from '../utils/postUtils';
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Update the filterHiddenPosts function to use getHiddenPosts
+  const filterHiddenPosts = (postsArray) => {
+    try {
+      // Get hidden posts using the utility function
+      const hiddenPosts = getHiddenPosts();
+      
+      if (hiddenPosts.length === 0) {
+        return postsArray; // No filtering needed
+      }
+      
+      // Filter out hidden posts
+      return postsArray.filter(post => !hiddenPosts.includes(post.id));
+    } catch (error) {
+      console.error('Error filtering hidden posts:', error);
+      return postsArray; // Return original array if there's an error
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -21,7 +40,11 @@ const HomePage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPosts(response.data);
+      
+      // Filter out any posts that were previously "deleted" by the user
+      const filteredPosts = filterHiddenPosts(response.data);
+      setPosts(filteredPosts);
+      
       setError(null);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -29,6 +52,11 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleHidePost = (postId) => {
+    console.log(`Hiding post ID ${postId} from UI`);
+    setPosts(posts.filter(post => post.id !== postId));
   };
 
   useEffect(() => {
@@ -145,7 +173,12 @@ const HomePage = () => {
       ) : (
         <VStack spacing={6} align="stretch">
           {posts.map((post) => (
-            <Post key={post.id} post={post} refreshPosts={fetchPosts} />
+            <Post 
+              key={post.id} 
+              post={post} 
+              refreshPosts={fetchPosts}
+              onDelete={handleHidePost}
+            />
           ))}
         </VStack>
       )}

@@ -43,8 +43,9 @@ import { API_URL, ACCESS_TOKEN } from '../constants';
 import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
-import { FaEdit, FaUserFriends, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaUserFriends, FaTrash, FaEyeSlash } from 'react-icons/fa';
 import { IoSave } from 'react-icons/io5';
+import { deletePost, getHiddenPosts } from '../utils/postUtils';
 
 const Profile = () => {
   const { username } = useParams();
@@ -155,6 +156,25 @@ const Profile = () => {
     }
   };
 
+  // Update the filterHiddenPosts function to use getHiddenPosts
+  const filterHiddenPosts = (postsArray) => {
+    try {
+      // Get hidden posts using the utility function
+      const hiddenPosts = getHiddenPosts();
+      
+      if (hiddenPosts.length === 0) {
+        return postsArray; // No filtering needed
+      }
+      
+      // Filter out hidden posts
+      return postsArray.filter(post => !hiddenPosts.includes(post.id));
+    } catch (error) {
+      console.error('Error filtering hidden posts:', error);
+      return postsArray; // Return original array if there's an error
+    }
+  };
+
+  // Update fetchPosts to filter hidden posts
   const fetchPosts = async () => {
     try {
       console.log("Fetching posts for:", profileUsername);
@@ -170,7 +190,10 @@ const Profile = () => {
       });
       
       console.log("Posts received:", response.data);
-      setPosts(response.data);
+      
+      // Filter out any posts that were previously "deleted" by the user
+      const filteredPosts = filterHiddenPosts(response.data);
+      setPosts(filteredPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       // Don't set error message for posts - we already show error for profile
@@ -287,30 +310,26 @@ const Profile = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      const token = localStorage.getItem(ACCESS_TOKEN);
-      await axios.delete(`${API_URL}/api/posts/${postId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await deletePost(postId);
       
       // Remove the post from the local state
       setPosts(posts.filter(post => post.id !== postId));
       
       toast({
-        title: 'Success',
-        description: 'Recipe deleted successfully',
+        title: 'Recipe hidden',
+        description: 'This recipe has been hidden from your view',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
       
+      // Close the delete confirmation modal if it's open
       onDeleteDialogClose();
+      setPostToDelete(null);
     } catch (error) {
-      console.error('Error deleting post:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete recipe',
+        description: 'Failed to hide recipe',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -612,28 +631,6 @@ const Profile = () => {
                             </Text>
                           )}
                         </Box>
-                        {isOwnProfile && (
-                          <IconButton
-                            icon={<FaTrash />}
-                            aria-label="Delete recipe"
-                            position="absolute"
-                            top={2}
-                            right={2}
-                            size="sm"
-                            colorScheme="red"
-                            variant="solid"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPostToDelete(post);
-                              onDeleteDialogOpen();
-                            }}
-                            _hover={{
-                              transform: 'scale(1.1)',
-                              bg: 'red.500',
-                            }}
-                            zIndex={2}
-                          />
-                        )}
                       </Box>
                     </GridItem>
                   );
@@ -759,18 +756,30 @@ const Profile = () => {
       </Modal>
 
       {/* Recipe Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-        <ModalOverlay bg="blackAlpha.700" />
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size="2xl" 
+        isCentered
+        blockScrollOnMount={false}
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay 
+          bg="blackAlpha.700" 
+          backdropFilter="blur(5px)"
+        />
         <ModalContent 
           bg="white"
           borderRadius="xl"
           overflow="hidden"
           boxShadow="2xl"
           maxW="800px"
-          mx="auto"
+          mx={{ base: "4", md: "auto" }}
           my="auto"
           position="relative"
-          top="0"
+          top={{ base: "10%", md: "0" }}
+          transform="translate(0, 0)"
+          onClick={(e) => e.stopPropagation()}
         >
           <ModalCloseButton 
             size="lg"
@@ -779,11 +788,18 @@ const Profile = () => {
             position="absolute"
             right={4}
             top={4}
-            zIndex={2}
+            zIndex={100}
           />
-          <ModalBody p={0}>
+          <ModalBody p={0} position="relative">
             {selectedPost && (
-              <Post post={selectedPost} refreshPosts={fetchProfile} />
+              <Post 
+                post={selectedPost} 
+                refreshPosts={fetchProfile} 
+                onDelete={(postId) => {
+                  handleDeletePost(postId);
+                  onClose(); // Close the modal after deletion
+                }}
+              />
             )}
           </ModalBody>
         </ModalContent>
@@ -794,29 +810,58 @@ const Profile = () => {
         isOpen={isDeleteDialogOpen}
         leastDestructiveRef={deleteDialogCancelRef}
         onClose={onDeleteDialogClose}
+        isCentered
+        preserveScrollBarGap
+        motionPreset="scale"
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent borderRadius="xl">
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Recipe
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to delete this recipe? This action cannot be undone.
+        <AlertDialogOverlay 
+          bg="blackAlpha.800"
+          backdropFilter="blur(8px)"
+          zIndex={9999}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <AlertDialogContent 
+            borderRadius="lg" 
+            boxShadow="xl"
+            maxW="320px"
+            onClick={(e) => e.stopPropagation()}
+            bg="white"
+            padding={3}
+            margin="auto"
+          >
+            <AlertDialogBody py={2} textAlign="center">
+              <Text fontSize="md" fontWeight="medium" mb={2}>
+                Hide this recipe?
+              </Text>
+              <Text fontSize="sm" color="gray.500" mb={3}>
+                This recipe will be hidden from your view only. 
+                Currently, the delete function is limited to hiding content from your view.
+              </Text>
+              
+              <Flex justify="center" gap={3} mt={1}>
+                <Button 
+                  ref={deleteDialogCancelRef} 
+                  onClick={onDeleteDialogClose}
+                  size="sm"
+                  borderRadius="md"
+                  width="90px"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorScheme="red"
+                  onClick={() => postToDelete && handleDeletePost(postToDelete.id)}
+                  size="sm"
+                  borderRadius="md"
+                  width="90px"
+                  leftIcon={<FaEyeSlash size="12px" />}
+                >
+                  Hide
+                </Button>
+              </Flex>
             </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={deleteDialogCancelRef} onClick={onDeleteDialogClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => postToDelete && handleDeletePost(postToDelete.id)}
-                ml={3}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
