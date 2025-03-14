@@ -12,6 +12,7 @@ from api.views import (
     search_users,
     get_user_followers,
     search_recipes,
+    get_current_user,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -22,6 +23,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     
     # User profiles
+    path('user/current/', get_current_user, name="current_user"),
     path('user_data/<str:pk>/', get_user_profile_data, name="user_profile"),
     path('user/<str:username>/follow/', follow_user, name="follow_user"),
     path('user/<str:username>/followers/', get_user_followers, name="user_followers"),
