@@ -88,25 +88,109 @@ const Navbar = () => {
                         TasteBuds
                     </Text>
                 </HStack>
-                <HStack gap='20px'>
-                    <Text onClick={() => handleNavigate('home')} cursor="pointer">
-                        <FaHouse size='20px' />
-                    </Text>
-                    <Text onClick={() => handleNavigate('explore')} cursor="pointer">
-                        <MdExplore size='22px' />
-                    </Text>
-                    <Text onClick={() => handleNavigate('create')} cursor="pointer">
-                        <IoMdAddCircleOutline size='22px' />
-                    </Text>
-                    <Text onClick={() => handleNavigate('search')} cursor="pointer">
-                        <IoSearch size='20px' />
-                    </Text>
-                    <Text onClick={navigateToProfile} cursor="pointer">
-                        <IoPersonOutline size='20px' />
-                    </Text>
-                    <Text onClick={handleLogout} cursor="pointer">
-                        <IoIosLogOut size='20px' />
-                    </Text>
+                <HStack gap='32px'>
+                    <Tooltip 
+                        label="Home" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={() => handleNavigate('home')} cursor="pointer">
+                            <FaHouse size='26px' />
+                        </Box>
+                    </Tooltip>
+                    <Tooltip 
+                        label="Explore" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={() => handleNavigate('explore')} cursor="pointer">
+                            <MdExplore size='28px' />
+                        </Box>
+                    </Tooltip>
+                    <Tooltip 
+                        label="Create Recipe" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={() => handleNavigate('create')} cursor="pointer">
+                            <IoMdAddCircleOutline size='28px' />
+                        </Box>
+                    </Tooltip>
+                    <Tooltip 
+                        label="Search" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={() => handleNavigate('search')} cursor="pointer">
+                            <IoSearch size='26px' />
+                        </Box>
+                    </Tooltip>
+                    <Tooltip 
+                        label="Profile" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={navigateToProfile} cursor="pointer">
+                            <IoPersonOutline size='26px' />
+                        </Box>
+                    </Tooltip>
+                    <Tooltip 
+                        label="Logout" 
+                        hasArrow 
+                        placement="bottom"
+                        bg="#7ac142"
+                        color="white"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={3}
+                        py={2}
+                        boxShadow="md"
+                    >
+                        <Box onClick={handleLogout} cursor="pointer">
+                            <IoIosLogOut size='26px' />
+                        </Box>
+                    </Tooltip>
                 </HStack>
             </HStack>
         </Flex>
