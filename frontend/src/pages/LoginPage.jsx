@@ -1,16 +1,14 @@
 import Form from "../components/LoginForm";
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/LoginPage.css';
 
 function Login() {
     const navigate = useNavigate();
     return (
-        <div>
+        <div className="login-container">
+            <h1 className="login-title">Welcome Back to TasteBuds</h1>
             <Form route="/api/token/" method="login" />
-            <div className="toMakeAccount">
-                <h3>Dont have an account?</h3>
-                <button className="toSignup" onClick={() => navigate('/signup')}>Sign up now!</button>
-            </div>
         </div>
     );
 }

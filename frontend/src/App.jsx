@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/LoginPage'
-import StartPage from './StartPage'
+import StartPage from './pages/StartPage'
 import NotFound from './pages/NotFound'
 import './index.css' // Global styles
 import HomePage from './pages/HomePage'
