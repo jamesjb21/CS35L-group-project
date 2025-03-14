@@ -12,7 +12,7 @@ TasteBuds is a social media platform for food enthusiasts to share, discover, an
 ## 🛠️ Technologies
 - **Frontend**: React, Vite, Chakra UI
 - **Backend**: Python (Django), Django REST Framework
-- **Database**: SQLite (development), PostgreSQL (production)
+- **Database**: SQLite (development)
 - **Authentication**: JWT (JSON Web Tokens)
 - **Version Control**: Git, GitHub
 
