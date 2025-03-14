@@ -79,8 +79,8 @@ const Explore = () => {
   }
 
   return (
-    <Container maxW="900px" py={8} px={4}>
-      <Box mb={8}>
+    <Container maxW="1600px" py={8}>
+      <Box mb={8} px={4}>
         <Heading 
           as="h1"
           fontSize="32px"
@@ -96,13 +96,15 @@ const Explore = () => {
       
       {posts.length > 0 ? (
         <Grid 
-          templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} 
-          gap={6}
+          templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(6, 1fr)' }} 
+          gap={8}
+          w="100%"
+          px={4}
         >
           {posts.map((post) => {
             const recipeData = parseRecipeData(post.caption);
             return (
-              <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+              <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer" w="100%">
                 <Box 
                   position="relative" 
                   paddingBottom="100%" 
