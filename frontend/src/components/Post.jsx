@@ -328,60 +328,62 @@ const Post = ({ post, refreshPosts }) => {
         )}
       </Box>
       
-      {/* Comments Section - Always show preview, optionally show all */}
-      <Box px={4} py={2} bg="gray.50">
-        {/* Only show "View all comments" if there are more than the preview amount */}
-        {commentsCount > PREVIEW_COMMENTS_COUNT && !showAllComments && (
-          <Text 
-            color="gray.500" 
-            mb={2} 
-            fontWeight="medium" 
-            cursor="pointer" 
-            onClick={handleCommentClick}
-            _hover={{ color: "blue.500" }}
-          >
-            View all {commentsCount} comments
-          </Text>
-        )}
-        
-        {/* Only show when expanded AND we have more than preview amount */}
-        {showAllComments && commentsCount > PREVIEW_COMMENTS_COUNT && (
-          <Text 
-            color="gray.500" 
-            mb={2} 
-            fontWeight="medium" 
-            cursor="pointer" 
-            onClick={handleCommentClick}
-            _hover={{ color: "blue.500" }}
-          >
-            Show fewer comments
-          </Text>
-        )}
+      {/* Comments Section - Only show if there are comments OR user has expanded comments */}
+      {(commentsCount > 0 || showAllComments) && (
+        <Box px={4} py={2} bg="gray.50">
+          {/* Only show "View all comments" if there are more than the preview amount */}
+          {commentsCount > PREVIEW_COMMENTS_COUNT && !showAllComments && (
+            <Text 
+              color="gray.500" 
+              mb={2} 
+              fontWeight="medium" 
+              cursor="pointer" 
+              onClick={handleCommentClick}
+              _hover={{ color: "blue.500" }}
+            >
+              View all {commentsCount} comments
+            </Text>
+          )}
+          
+          {/* Only show when expanded AND we have more than preview amount */}
+          {showAllComments && commentsCount > PREVIEW_COMMENTS_COUNT && (
+            <Text 
+              color="gray.500" 
+              mb={2} 
+              fontWeight="medium" 
+              cursor="pointer" 
+              onClick={handleCommentClick}
+              _hover={{ color: "blue.500" }}
+            >
+              Show fewer comments
+            </Text>
+          )}
 
-        {/* Status messages - only show when expanded */}
-        {showAllComments && (
-          <>
-            {commentsCount === 0 && (
-              <Text color="gray.500" mb={2} fontWeight="medium">No comments yet</Text>
-            )}
-            {commentsCount > 0 && commentsCount <= PREVIEW_COMMENTS_COUNT && (
-              <Text color="gray.500" mb={2} fontWeight="medium">Showing all comments</Text>
-            )}
-          </>
-        )}
+          {/* Status messages - only show when expanded */}
+          {showAllComments && (
+            <>
+              {commentsCount === 0 && (
+                <Text color="gray.500" mb={2} fontWeight="medium">No comments yet</Text>
+              )}
+              {commentsCount > 0 && commentsCount <= PREVIEW_COMMENTS_COUNT && (
+                <Text color="gray.500" mb={2} fontWeight="medium">Showing all comments</Text>
+              )}
+            </>
+          )}
 
-        {/* Comment list - always display if we have comments */}
-        {commentsCount > 0 && commentsToDisplay.map((comment) => (
-          <Text key={comment.id} mb={1} color="#4A5568">
-            <Link to={`/profile/${comment.username}`}>
-              <Text as="span" fontWeight="bold" mr={2} _hover={{ color: 'green.500' }}>
-                {comment.username}
-              </Text>
-            </Link>
-            {comment.text}
-          </Text>
-        ))}
-      </Box>
+          {/* Comment list - always display if we have comments */}
+          {commentsCount > 0 && commentsToDisplay.map((comment) => (
+            <Text key={comment.id} mb={1} color="#4A5568">
+              <Link to={`/profile/${comment.username}`}>
+                <Text as="span" fontWeight="bold" mr={2} _hover={{ color: 'green.500' }}>
+                  {comment.username}
+                </Text>
+              </Link>
+              {comment.text}
+            </Text>
+          ))}
+        </Box>
+      )}
       
       {/* Add Comment */}
       <Box as="form" onSubmit={handleComment} p={4} borderTop="1px" borderColor="gray.100">
