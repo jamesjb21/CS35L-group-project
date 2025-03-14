@@ -43,7 +43,7 @@ import { API_URL, ACCESS_TOKEN } from '../constants';
 import Post from '../components/Post';
 import { jwtDecode } from 'jwt-decode';
 import { GiCook } from 'react-icons/gi';
-import { FaEdit, FaUserFriends } from 'react-icons/fa';
+import { FaEdit, FaUserFriends, FaTrash } from 'react-icons/fa';
 import { IoSave } from 'react-icons/io5';
 
 const Profile = () => {
@@ -67,6 +67,13 @@ const Profile = () => {
   const cancelRef = React.useRef();
   const toast = useToast();
   const navigate = useNavigate();
+  const [postToDelete, setPostToDelete] = useState(null);
+  const {
+    isOpen: isDeleteDialogOpen,
+    onOpen: onDeleteDialogOpen,
+    onClose: onDeleteDialogClose
+  } = useDisclosure();
+  const deleteDialogCancelRef = React.useRef();
   
   // Add parseRecipeData function
   const parseRecipeData = (caption) => {
@@ -92,14 +99,13 @@ const Profile = () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (token) {
       const decodedToken = jwtDecode(token);
-      currentUsername = decodedToken.username;
+      currentUsername = decodedToken.user_id;
       console.log("Token decoded, username:", currentUsername);
     } else {
       console.log("No access token found in localStorage");
     }
   } catch (e) {
     console.error("Error decoding token:", e);
-    // Don't set error here, just log it
   }
   
   // If no username in URL params, use the current user's username
@@ -272,6 +278,39 @@ const Profile = () => {
       toast({
         title: 'Error',
         description: 'Failed to update bio',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      await axios.delete(`${API_URL}/api/posts/${postId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Remove the post from the local state
+      setPosts(posts.filter(post => post.id !== postId));
+      
+      toast({
+        title: 'Success',
+        description: 'Recipe deleted successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      onDeleteDialogClose();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete recipe',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -530,8 +569,9 @@ const Profile = () => {
               >
                 {posts.map((post) => {
                   const recipeData = parseRecipeData(post.caption);
+                  console.log("Rendering post:", { postId: post.id, isOwnProfile });
                   return (
-                    <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+                    <GridItem key={post.id} cursor="pointer" onClick={() => openPostModal(post)}>
                       <Box 
                         position="relative" 
                         paddingBottom="100%" 
@@ -572,6 +612,28 @@ const Profile = () => {
                             </Text>
                           )}
                         </Box>
+                        {isOwnProfile && (
+                          <IconButton
+                            icon={<FaTrash />}
+                            aria-label="Delete recipe"
+                            position="absolute"
+                            top={2}
+                            right={2}
+                            size="sm"
+                            colorScheme="red"
+                            variant="solid"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPostToDelete(post);
+                              onDeleteDialogOpen();
+                            }}
+                            _hover={{
+                              transform: 'scale(1.1)',
+                              bg: 'red.500',
+                            }}
+                            zIndex={2}
+                          />
+                        )}
                       </Box>
                     </GridItem>
                   );
@@ -726,6 +788,38 @@ const Profile = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isDeleteDialogOpen}
+        leastDestructiveRef={deleteDialogCancelRef}
+        onClose={onDeleteDialogClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent borderRadius="xl">
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Recipe
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete this recipe? This action cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={deleteDialogCancelRef} onClick={onDeleteDialogClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={() => postToDelete && handleDeletePost(postToDelete.id)}
+                ml={3}
+              >
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };

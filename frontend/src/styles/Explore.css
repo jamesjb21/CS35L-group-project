@@ -1,0 +1,36 @@
+/* Explore.css */
+/* Styles for the Explore page */
+
+.explore-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.explore-header {
+  margin-bottom: 2rem;
+}
+
+.explore-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.explore-item {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.explore-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+} 

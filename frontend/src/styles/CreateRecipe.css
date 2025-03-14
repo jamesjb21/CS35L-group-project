@@ -1,0 +1,15 @@
+/* CreateRecipe.css */
+/* Styles for the Create Recipe page */
+
+.create-recipe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.create-recipe-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+} 

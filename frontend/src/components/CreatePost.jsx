@@ -195,11 +195,15 @@ const CreatePost = () => {
       const recipeJson = JSON.stringify(recipeData);
       
       const token = localStorage.getItem('access_token');
+      console.log('Creating post with token:', token ? 'Token exists' : 'No token found');
+      
       const formData = new FormData();
       formData.append('image', image);
       formData.append('caption', recipeJson);
       
-      await axios.post(
+      console.log('Attempting to create post with URL:', `${API_URL}/api/posts/create/`);
+      
+      const response = await axios.post(
         `${API_URL}/api/posts/create/`,
         formData,
         {
@@ -209,6 +213,8 @@ const CreatePost = () => {
           },
         }
       );
+      
+      console.log('Post created successfully, response:', response.data);
       
       toast({
         title: 'Recipe posted',
@@ -220,7 +226,8 @@ const CreatePost = () => {
       
       navigate('/home');
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Error creating post:', error.response ? error.response.data : error.message);
+      console.error('Full error:', error);
       toast({
         title: 'Error',
         description: 'Failed to share recipe. Please try again.',
