@@ -52,7 +52,8 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    'USER_ID_FIELD': 'username'
+    'USER_ID_FIELD': 'username',
+    'PAYLOAD_INCLUDE_USER_ID': True,
 }
 
 AUTHENTICATION_BACKENDS = [
