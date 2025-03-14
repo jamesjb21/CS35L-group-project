@@ -68,6 +68,24 @@ const Profile = () => {
   const toast = useToast();
   const navigate = useNavigate();
   
+  // Add parseRecipeData function
+  const parseRecipeData = (caption) => {
+    try {
+      console.log("Parsing caption:", caption);
+      const data = JSON.parse(caption);
+      console.log("Parsed data:", data);
+      return data;
+    } catch (e) {
+      console.error("Error parsing caption:", e);
+      // If parsing fails, treat the caption as plain text
+      return {
+        title: caption,
+        ingredients: [],
+        instructions: ''
+      };
+    }
+  };
+  
   // Get current user from token - but don't throw errors if token is invalid
   let currentUsername = null;
   try {
@@ -223,6 +241,7 @@ const Profile = () => {
   };
 
   const openPostModal = (post) => {
+    console.log("Opening post modal with:", post);
     setSelectedPost(post);
     onOpen();
   };
@@ -509,51 +528,54 @@ const Profile = () => {
                 templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }} 
                 gap={6}
               >
-                {posts.map((post) => (
-                  <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
-                    <Box 
-                      position="relative" 
-                      paddingBottom="100%" 
-                      overflow="hidden"
-                      borderRadius="xl"
-                      boxShadow="md"
-                      transition="all 0.2s"
-                      _hover={{
-                        transform: 'translateY(-2px)',
-                        boxShadow: 'lg',
-                      }}
-                    >
-                      <Image 
-                        src={post.image} 
-                        alt={post.caption} 
-                        position="absolute"
-                        top="0"
-                        left="0"
-                        width="100%"
-                        height="100%"
-                        objectFit="cover"
-                      />
-                      <Box
-                        position="absolute"
-                        bottom="0"
-                        left="0"
-                        right="0"
-                        bg="rgba(0,0,0,0.7)"
-                        p={3}
-                        color="white"
+                {posts.map((post) => {
+                  const recipeData = parseRecipeData(post.caption);
+                  return (
+                    <GridItem key={post.id} onClick={() => openPostModal(post)} cursor="pointer">
+                      <Box 
+                        position="relative" 
+                        paddingBottom="100%" 
+                        overflow="hidden"
+                        borderRadius="xl"
+                        boxShadow="md"
+                        transition="all 0.2s"
+                        _hover={{
+                          transform: 'translateY(-2px)',
+                          boxShadow: 'lg',
+                        }}
                       >
-                        <Text fontWeight="bold" noOfLines={1}>
-                          {post.recipe_title || post.caption || 'Tasty Recipe'}
-                        </Text>
-                        {post.ingredients && post.ingredients.length > 0 && (
-                          <Text fontSize="sm" noOfLines={1}>
-                            {post.ingredients.length} Ingredients
+                        <Image 
+                          src={post.image} 
+                          alt={recipeData.title} 
+                          position="absolute"
+                          top="0"
+                          left="0"
+                          width="100%"
+                          height="100%"
+                          objectFit="cover"
+                        />
+                        <Box
+                          position="absolute"
+                          bottom="0"
+                          left="0"
+                          right="0"
+                          bg="rgba(0,0,0,0.7)"
+                          p={3}
+                          color="white"
+                        >
+                          <Text fontWeight="bold" noOfLines={1}>
+                            {recipeData.title || 'Tasty Recipe'}
                           </Text>
-                        )}
+                          {recipeData.ingredients && recipeData.ingredients.length > 0 && (
+                            <Text fontSize="sm" noOfLines={1}>
+                              {recipeData.ingredients.length} Ingredients
+                            </Text>
+                          )}
+                        </Box>
                       </Box>
-                    </Box>
-                  </GridItem>
-                ))}
+                    </GridItem>
+                  );
+                })}
               </Grid>
             ) : (
               <Box textAlign="center" py={10}>
@@ -669,6 +691,37 @@ const Profile = () => {
                   {profile?.username} doesn't have any followers yet.
                 </Text>
               </Center>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Recipe Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
+        <ModalOverlay bg="blackAlpha.700" />
+        <ModalContent 
+          bg="white"
+          borderRadius="xl"
+          overflow="hidden"
+          boxShadow="2xl"
+          maxW="800px"
+          mx="auto"
+          my="auto"
+          position="relative"
+          top="0"
+        >
+          <ModalCloseButton 
+            size="lg"
+            color="gray.500"
+            _hover={{ color: 'gray.700' }}
+            position="absolute"
+            right={4}
+            top={4}
+            zIndex={2}
+          />
+          <ModalBody p={0}>
+            {selectedPost && (
+              <Post post={selectedPost} refreshPosts={fetchProfile} />
             )}
           </ModalBody>
         </ModalContent>
