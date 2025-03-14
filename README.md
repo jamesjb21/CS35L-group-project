@@ -111,7 +111,8 @@ Here's a visual tour of our application:
 5. Install frontend packages:
 
    ```bash
-   cd ../frontend
+   cd ..
+   cd frontend
    npm install
    ```   
 
